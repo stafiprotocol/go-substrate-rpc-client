@@ -17,7 +17,7 @@
 package system
 
 import (
-	"github.com/kaelnew/go-substrate-rpc-client/types"
+	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
 
 // Health retrieves the health status of the connected node

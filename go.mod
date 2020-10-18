@@ -1,4 +1,4 @@
-module github.com/kaelnew/go-substrate-rpc-client
+module github.com/stafiprotocol/go-substrate-rpc-client
 
 go 1.13
 

@@ -19,7 +19,7 @@ package types_test
 import (
 	"testing"
 
-	. "github.com/kaelnew/go-substrate-rpc-client/types"
+	. "github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
 
 var testMultiSig1 = MultiSignature{IsEd25519: true, AsEd25519: NewSignature(hash64)}

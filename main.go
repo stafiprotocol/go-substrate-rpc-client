@@ -1,8 +1,8 @@
 package gsrpc
 
 import (
-	"github.com/kaelnew/go-substrate-rpc-client/client"
-	"github.com/kaelnew/go-substrate-rpc-client/rpc"
+	"github.com/stafiprotocol/go-substrate-rpc-client/client"
+	"github.com/stafiprotocol/go-substrate-rpc-client/rpc"
 )
 
 type SubstrateAPI struct {

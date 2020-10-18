@@ -21,7 +21,7 @@ import (
 	"strconv"
 	"time"
 
-	gethrpc "github.com/kaelnew/go-substrate-rpc-client/gethrpc"
+	gethrpc "github.com/stafiprotocol/go-substrate-rpc-client/gethrpc"
 )
 
 type Server struct {

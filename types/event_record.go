@@ -23,7 +23,7 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/kaelnew/go-substrate-rpc-client/scale"
+	"github.com/stafiprotocol/go-substrate-rpc-client/scale"
 	"github.com/ethereum/go-ethereum/log"
 )
 

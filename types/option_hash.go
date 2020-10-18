@@ -16,7 +16,7 @@
 
 package types
 
-import "github.com/kaelnew/go-substrate-rpc-client/scale"
+import "github.com/stafiprotocol/go-substrate-rpc-client/scale"
 
 // OptionH160 is a structure that can store a H160 or a missing value
 type OptionH160 struct {

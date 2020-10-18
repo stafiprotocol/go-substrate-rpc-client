@@ -19,7 +19,7 @@ package types_test
 import (
 	"testing"
 
-	. "github.com/kaelnew/go-substrate-rpc-client/types"
+	. "github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
 
 // newOrigin creates a new Origin type. This function is not exported by purpose – Origin should be ignored and not be

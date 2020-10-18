@@ -20,7 +20,7 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/kaelnew/go-substrate-rpc-client/types"
+	. "github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
 
 func TestMoment_EncodeDecode(t *testing.T) {

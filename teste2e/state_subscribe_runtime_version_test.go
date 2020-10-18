@@ -21,8 +21,8 @@ import (
 	"testing"
 	"time"
 
-	gsrpc "github.com/kaelnew/go-substrate-rpc-client"
-	"github.com/kaelnew/go-substrate-rpc-client/config"
+	gsrpc "github.com/stafiprotocol/go-substrate-rpc-client"
+	"github.com/stafiprotocol/go-substrate-rpc-client/config"
 	"github.com/stretchr/testify/assert"
 )
 

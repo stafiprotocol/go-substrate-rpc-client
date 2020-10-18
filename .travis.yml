@@ -14,7 +14,7 @@ git:
 notifications:
   email: false
 
-go_import_path: github.com/kaelnew/go-substrate-rpc-client
+go_import_path: github.com/stafiprotocol/go-substrate-rpc-client
 
 services:
   - docker

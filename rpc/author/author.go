@@ -16,7 +16,7 @@
 
 package author
 
-import "github.com/kaelnew/go-substrate-rpc-client/client"
+import "github.com/stafiprotocol/go-substrate-rpc-client/client"
 
 // Author exposes methods for authoring of network items
 type Author struct {

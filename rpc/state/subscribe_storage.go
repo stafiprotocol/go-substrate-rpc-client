@@ -20,9 +20,9 @@ import (
 	"context"
 	"sync"
 
-	"github.com/kaelnew/go-substrate-rpc-client/config"
-	gethrpc "github.com/kaelnew/go-substrate-rpc-client/gethrpc"
-	"github.com/kaelnew/go-substrate-rpc-client/types"
+	"github.com/stafiprotocol/go-substrate-rpc-client/config"
+	gethrpc "github.com/stafiprotocol/go-substrate-rpc-client/gethrpc"
+	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
 
 // StorageSubscription is a subscription established through one of the Client's subscribe methods.

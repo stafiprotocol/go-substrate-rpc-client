@@ -19,7 +19,7 @@ package types
 import (
 	"fmt"
 
-	"github.com/kaelnew/go-substrate-rpc-client/scale"
+	"github.com/stafiprotocol/go-substrate-rpc-client/scale"
 )
 
 const MagicNumber uint32 = 0x6174656d
