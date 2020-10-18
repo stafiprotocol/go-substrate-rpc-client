@@ -1,6 +1,6 @@
 // Go Substrate RPC Client (GSRPC) provides APIs and types around Polkadot and any Substrate-based system RPC calls
 //
-// Copyright 2019 Centrifuge GmbH
+// Copyright 2020 Stafi Protocol
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
