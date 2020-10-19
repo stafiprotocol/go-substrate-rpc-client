@@ -115,6 +115,19 @@ func (m *MetadataV10) ExistsModuleMetadata(module string) bool {
 	return false
 }
 
+func (m MetadataV10) GetConst(prefix, name string, res interface{}) error {
+	for _, mod := range m.Modules {
+		if string(mod.Name) == prefix {
+			for _, cons := range mod.Constants {
+				if string(cons.Name) == name {
+					return DecodeFromBytes(cons.Value, res)
+				}
+			}
+		}
+	}
+	return fmt.Errorf("could not find constant %s.%s", prefix, name)
+}
+
 type ModuleMetadataV10 struct {
 	Name       Text
 	HasStorage bool
