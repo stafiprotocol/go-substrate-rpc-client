@@ -23,8 +23,8 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/stafiprotocol/go-substrate-rpc-client/scale"
 	"github.com/ethereum/go-ethereum/log"
+	"github.com/stafiprotocol/go-substrate-rpc-client/scale"
 )
 
 // EventRecordsRaw is a raw record for a set of events, represented as the raw bytes. It exists since
@@ -125,6 +125,11 @@ type EventRecords struct {
 	TechnicalCommittee_Executed        []EventTechnicalCommitteeExecuted        //nolint:stylecheck,golint
 	TechnicalCommittee_MemberExecuted  []EventTechnicalCommitteeMemberExecuted  //nolint:stylecheck,golint
 	TechnicalCommittee_Closed          []EventTechnicalCommitteeClosed          //nolint:stylecheck,golint
+	TechnicalMembership_MemberAdded    []EventTechnicalMembershipMemberAdded    //nolint:stylecheck,golint
+	TechnicalMembership_MemberRemoved  []EventTechnicalMembershipMemberRemoved  //nolint:stylecheck,golint
+	TechnicalMembership_MembersSwapped []EventTechnicalMembershipMembersSwapped //nolint:stylecheck,golint
+	TechnicalMembership_MembersReset   []EventTechnicalMembershipMembersReset   //nolint:stylecheck,golint
+	TechnicalMembership_KeyChanged     []EventTechnicalMembershipKeyChanged     //nolint:stylecheck,golint
 	Elections_NewTerm                  []EventElectionsNewTerm                  //nolint:stylecheck,golint
 	Elections_EmptyTerm                []EventElectionsEmptyTerm                //nolint:stylecheck,golint
 	Elections_MemberKicked             []EventElectionsMemberKicked             //nolint:stylecheck,golint

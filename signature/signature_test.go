@@ -36,8 +36,8 @@ func TestKeyRingPairFromSecretPhrase(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, KeyringPair{
-		URI: testSecretPhrase,
-		Address: testAddressSS58,
+		URI:       testSecretPhrase,
+		Address:   testAddressSS58,
 		PublicKey: types.MustHexDecodeString(testPubKey),
 	}, p)
 }
@@ -47,8 +47,8 @@ func TestKeyringPairFromSecretSeed(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, KeyringPair{
-		URI: testSecretSeed,
-		Address: testAddressSS58,
+		URI:       testSecretSeed,
+		Address:   testAddressSS58,
 		PublicKey: types.MustHexDecodeString(testPubKey),
 	}, p)
 }
@@ -58,8 +58,8 @@ func TestKeyringPairFromSecretSeedAndNetwork(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, KeyringPair{
-		URI: testSecretSeed,
-		Address: testKusamaAddressSS58,
+		URI:       testSecretSeed,
+		Address:   testKusamaAddressSS58,
 		PublicKey: types.MustHexDecodeString(testPubKey),
 	}, p)
 }

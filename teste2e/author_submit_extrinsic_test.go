@@ -133,12 +133,12 @@ func TestChain_SubmitExtrinsic(t *testing.T) {
 	for i := uint32(0); i < 4; i++ {
 		o := types.SignatureOptions{
 			// BlockHash:   blockHash,
-			BlockHash:   genesisHash, // BlockHash needs to == GenesisHash if era is immortal. // TODO: add an error?
-			Era:         era,
-			GenesisHash: genesisHash,
-			Nonce:       types.NewUCompactFromUInt(uint64(nonce + i)),
-			SpecVersion: rv.SpecVersion,
-			Tip:         types.NewUCompactFromUInt(0),
+			BlockHash:          genesisHash, // BlockHash needs to == GenesisHash if era is immortal. // TODO: add an error?
+			Era:                era,
+			GenesisHash:        genesisHash,
+			Nonce:              types.NewUCompactFromUInt(uint64(nonce + i)),
+			SpecVersion:        rv.SpecVersion,
+			Tip:                types.NewUCompactFromUInt(0),
 			TransactionVersion: 1,
 		}
 

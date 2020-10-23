@@ -90,12 +90,12 @@ func TestAuthor_SubmitAndWatchExtrinsic(t *testing.T) {
 
 	o := types.SignatureOptions{
 		// BlockHash:   blockHash,
-		BlockHash:   genesisHash, // BlockHash needs to == GenesisHash if era is immortal. // TODO: add an error?
-		Era:         era,
-		GenesisHash: genesisHash,
-		Nonce:       types.NewUCompactFromUInt(uint64(nonce)),
-		SpecVersion: rv.SpecVersion,
-		Tip:         types.NewUCompactFromUInt(0),
+		BlockHash:          genesisHash, // BlockHash needs to == GenesisHash if era is immortal. // TODO: add an error?
+		Era:                era,
+		GenesisHash:        genesisHash,
+		Nonce:              types.NewUCompactFromUInt(uint64(nonce)),
+		SpecVersion:        rv.SpecVersion,
+		Tip:                types.NewUCompactFromUInt(0),
 		TransactionVersion: 1,
 	}
 

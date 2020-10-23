@@ -675,6 +675,36 @@ type EventTechnicalCommitteeClosed struct {
 	Topics   []Hash
 }
 
+// EventTechnicalMembershipMemberAdded is emitted when The given member was added
+type EventTechnicalMembershipMemberAdded struct {
+	Phase  Phase
+	Topics []Hash
+}
+
+// EventTechnicalMembershipMemberRemoved is emitted when The given member was removed
+type EventTechnicalMembershipMemberRemoved struct {
+	Phase  Phase
+	Topics []Hash
+}
+
+// EventTechnicalMembershipMembersSwapped is emitted when Two members were swapped
+type EventTechnicalMembershipMembersSwapped struct {
+	Phase  Phase
+	Topics []Hash
+}
+
+// EventTechnicalMembershipMembersReset is emitted when The membership was reset
+type EventTechnicalMembershipMembersReset struct {
+	Phase  Phase
+	Topics []Hash
+}
+
+// EventTechnicalMembershipKeyChanged is emitted when One of the members' keys changed
+type EventTechnicalMembershipKeyChanged struct {
+	Phase  Phase
+	Topics []Hash
+}
+
 // EventElectionsNewTerm is emitted when a new term with new members.
 // This indicates that enough candidates existed, not that enough have has been elected.
 // The inner value must be examined for this purpose.

@@ -5,7 +5,6 @@ import (
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
 
-
 const (
 	metaV10 = 10
 	metaV11 = 11
