@@ -307,6 +307,9 @@ func (e EventRecordsRaw) DecodeEventRecords(m *Metadata, t interface{}) error {
 			}
 		}
 
+		//bytesData, _ := json.Marshal(holder.Elem().Interface())
+		//fmt.Println(fmt.Sprintf("%v_%v", moduleName, eventName), ":  ", string(bytesData))
+
 		// add the decoded event to the slice
 		field.Set(reflect.Append(field, holder.Elem()))
 
@@ -375,17 +378,29 @@ func (d *DispatchError) Decode(decoder scale.Decoder) error {
 	}
 
 	// https://github.com/paritytech/substrate/blob/4da29261bfdc13057a425c1721aeb4ec68092d42/primitives/runtime/src/lib.rs
-	// Line 391
+	// Line 447
 	// Enum index 3 for Module Error
 	if b == 3 {
 		d.HasModule = true
 		err = decoder.Decode(&d.Module)
-	}
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
+
+		err = decoder.Decode(&d.Error)
+		if err != nil {
+			return err
+		}
+	} else if b == 6 {
+		// Enum index 6 for token Error
+		err = decoder.Decode(&d.Error)
+		if err != nil {
+			return err
+		}
 	}
 
-	return decoder.Decode(&d.Error)
+	return nil
+
 }
 
 func (d DispatchError) Encode(encoder scale.Encoder) error {
