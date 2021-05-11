@@ -86,11 +86,13 @@ type EventRecords struct {
 	Staking_Bonded                     []EventStakingBonded                     //nolint:stylecheck,golint
 	Staking_Unbonded                   []EventStakingUnbonded                   //nolint:stylecheck,golint
 	Staking_Withdrawn                  []EventStakingWithdrawn                  //nolint:stylecheck,golint
+	Staking_Kicked                     []EventStakingKicked                     //nolint:stylecheck,golint
 	System_ExtrinsicSuccess            []EventSystemExtrinsicSuccess            //nolint:stylecheck,golint
 	System_ExtrinsicFailed             []EventSystemExtrinsicFailed             //nolint:stylecheck,golint
 	System_CodeUpdated                 []EventSystemCodeUpdated                 //nolint:stylecheck,golint
 	System_NewAccount                  []EventSystemNewAccount                  //nolint:stylecheck,golint
 	System_KilledAccount               []EventSystemKilledAccount               //nolint:stylecheck,golint
+	System_Remarked                    []EventSystemRemarked                    //nolint:stylecheck,golint
 	Assets_Issued                      []EventAssetIssued                       //nolint:stylecheck,golint
 	Assets_Transferred                 []EventAssetTransferred                  //nolint:stylecheck,golint
 	Assets_Destroyed                   []EventAssetDestroyed                    //nolint:stylecheck,golint
