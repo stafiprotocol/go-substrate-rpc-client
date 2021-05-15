@@ -18,6 +18,7 @@ package types
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -114,7 +115,7 @@ type EventRecords struct {
 	Democracy_PreimageReaped           []EventDemocracyPreimageReaped           //nolint:stylecheck,golint
 	Democracy_Unlocked                 []EventDemocracyUnlocked                 //nolint:stylecheck,golint
 	Council_Proposed                   []EventCollectiveProposed                //nolint:stylecheck,golint
-	Council_Voted                      []EventCollectiveProposed                //nolint:stylecheck,golint
+	Council_Voted                      []EventCollectiveVoted                   //nolint:stylecheck,golint
 	Council_Approved                   []EventCollectiveApproved                //nolint:stylecheck,golint
 	Council_Disapproved                []EventCollectiveDisapproved             //nolint:stylecheck,golint
 	Council_Executed                   []EventCollectiveExecuted                //nolint:stylecheck,golint
@@ -309,8 +310,8 @@ func (e EventRecordsRaw) DecodeEventRecords(m *Metadata, t interface{}) error {
 			}
 		}
 
-		//bytesData, _ := json.Marshal(holder.Elem().Interface())
-		//fmt.Println(fmt.Sprintf("%v_%v", moduleName, eventName), ":  ", string(bytesData))
+		bytesData, _ := json.Marshal(holder.Elem().Interface())
+		fmt.Println(fmt.Sprintf("%v_%v", moduleName, eventName), ":  ", string(bytesData))
 
 		// add the decoded event to the slice
 		field.Set(reflect.Append(field, holder.Elem()))
