@@ -18,7 +18,6 @@ package types
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -310,8 +309,8 @@ func (e EventRecordsRaw) DecodeEventRecords(m *Metadata, t interface{}) error {
 			}
 		}
 
-		bytesData, _ := json.Marshal(holder.Elem().Interface())
-		fmt.Println(fmt.Sprintf("%v_%v", moduleName, eventName), ":  ", string(bytesData))
+		//bytesData, _ := json.Marshal(holder.Elem().Interface())
+		//fmt.Println(fmt.Sprintf("%v_%v", moduleName, eventName), ":  ", string(bytesData))
 
 		// add the decoded event to the slice
 		field.Set(reflect.Append(field, holder.Elem()))
