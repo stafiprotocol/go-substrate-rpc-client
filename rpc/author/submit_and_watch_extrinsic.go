@@ -81,3 +81,23 @@ func (a *Author) SubmitAndWatchExtrinsic(xt types.Extrinsic) (*ExtrinsicStatusSu
 
 	return &ExtrinsicStatusSubscription{sub: sub, channel: c}, nil
 }
+
+func (a *Author) SubmitAndWatch(xt interface{}) (*ExtrinsicStatusSubscription, error) { //nolint:lll
+	ctx, cancel := context.WithTimeout(context.Background(), config.Default().SubscribeTimeout)
+	defer cancel()
+
+	c := make(chan types.ExtrinsicStatus)
+
+	enc, err := types.EncodeToHexString(xt)
+	if err != nil {
+		return nil, err
+	}
+
+	sub, err := a.client.Subscribe(ctx, "author", "submitAndWatchExtrinsic", "unwatchExtrinsic", "extrinsicUpdate",
+		c, enc)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ExtrinsicStatusSubscription{sub: sub, channel: c}, nil
+}
