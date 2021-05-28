@@ -43,6 +43,8 @@ type Metadata struct {
 	AsMetadataV11 MetadataV11
 	IsMetadataV12 bool
 	AsMetadataV12 MetadataV12
+	IsMetadataV13 bool
+	AsMetadataV13 MetadataV13
 }
 
 func NewMetadataV4() *Metadata {
@@ -78,6 +80,14 @@ func NewMetadataV12() *Metadata {
 		Version:       12,
 		IsMetadataV12: true,
 		AsMetadataV12: MetadataV12{Modules: make([]ModuleMetadataV12, 0)},
+	}
+}
+
+func NewMetadataV13() *Metadata {
+	return &Metadata{
+		Version:       13,
+		IsMetadataV13: true,
+		AsMetadataV13: MetadataV13{MetadataV12: MetadataV12{Modules: make([]ModuleMetadataV12, 0)}},
 	}
 }
 
@@ -117,6 +127,9 @@ func (m *Metadata) Decode(decoder scale.Decoder) error {
 	case 12:
 		m.IsMetadataV12 = true
 		err = decoder.Decode(&m.AsMetadataV12)
+	case 13:
+		m.IsMetadataV13 = true
+		err = decoder.Decode(&m.AsMetadataV13)
 	default:
 		return fmt.Errorf("unsupported metadata version %v", m.Version)
 	}

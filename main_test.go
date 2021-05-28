@@ -3,6 +3,7 @@ package gsrpc_test
 import (
 	"fmt"
 	"math/big"
+	"testing"
 	"time"
 
 	gsrpc "github.com/stafiprotocol/go-substrate-rpc-client"
@@ -467,4 +468,20 @@ func Example_transactionWithEvents() {
 			return
 		}
 	}
+}
+
+func TestV13(t *testing.T) {
+	url := "wss://kusama-rpc.polkadot.io"
+
+	api, err := gsrpc.NewSubstrateAPI(url)
+	if err != nil {
+		panic(err)
+	}
+
+	meta, err := api.RPC.State.GetMetadataLatest()
+	if err != nil {
+		panic(err)
+	}
+
+	t.Log(meta.Version)
 }
