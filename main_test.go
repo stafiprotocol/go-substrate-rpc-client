@@ -484,4 +484,18 @@ func TestV13(t *testing.T) {
 	}
 
 	t.Log(meta.Version)
+
+	var index uint32
+	key, err := types.CreateStorageKey(meta, "Staking", "ActiveEra", nil, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	ok, err := api.RPC.State.GetStorageLatest(key, &index)
+	if err != nil {
+		panic(err)
+	}
+
+	t.Log(ok)
+	t.Log(index)
 }
