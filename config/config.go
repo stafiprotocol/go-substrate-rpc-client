@@ -29,13 +29,18 @@ type Config struct {
 	SubscribeTimeout time.Duration
 }
 
+var (
+	DialTimeout      = 10 * time.Second
+	SubscribeTimeout = 10 * time.Second
+)
+
 // DefaultConfig returns the default config. Default values can be overwritten with env variables, most importantly
 // RPC_URL for a custom RPC endpoint.
 func Default() Config {
 	return Config{
 		RPCURL:           extractDefaultRPCURL(),
-		DialTimeout:      10 * time.Second,
-		SubscribeTimeout: 5 * time.Second,
+		DialTimeout:      DialTimeout,
+		SubscribeTimeout: SubscribeTimeout,
 	}
 }
 
@@ -48,4 +53,12 @@ func extractDefaultRPCURL() string {
 
 	// Fallback
 	return "ws://127.0.0.1:9944"
+}
+
+func SetDialTimeout(dialTimeout time.Duration) {
+	DialTimeout = dialTimeout
+}
+
+func SetSubscribeTimeout(subscribeTimeout time.Duration) {
+	SubscribeTimeout = subscribeTimeout
 }
