@@ -262,6 +262,14 @@ type EventStakingWithdrawn struct {
 	Topics []Hash
 }
 
+//  A nominator has been kicked from a validator. \[nominator, stash\]
+type EventStakingKicked struct {
+	Phase     Phase
+	Nominator AccountID
+	Stash     AccountID
+	Topics    []Hash
+}
+
 // EventSystemExtrinsicSuccessV8 is emitted when an extrinsic completed successfully
 //
 // Deprecated: EventSystemExtrinsicSuccessV8 exists to allow users to simply implement their own EventRecords struct if
@@ -1338,4 +1346,12 @@ type EventMultisigCancelled struct {
 	ID        AccountID
 	CallHash  Hash
 	Topics    []Hash
+}
+
+// EventSystemRemarked
+type EventSystemRemarked struct {
+	Phase      Phase
+	Origin     AccountID
+	RemarkHash Hash
+	Topics     []Hash
 }
