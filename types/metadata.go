@@ -87,7 +87,7 @@ func NewMetadataV13() *Metadata {
 	return &Metadata{
 		Version:       13,
 		IsMetadataV13: true,
-		AsMetadataV13: MetadataV13{MetadataV12: MetadataV12{Modules: make([]ModuleMetadataV12, 0)}},
+		AsMetadataV13: MetadataV13{Modules: make([]ModuleMetadataV13, 0)},
 	}
 }
 
@@ -261,5 +261,30 @@ func (m *Metadata) ExistsModuleMetadata(module string) bool {
 		return m.AsMetadataV13.ExistsModuleMetadata(module)
 	default:
 		return false
+	}
+}
+
+func (m *Metadata) FindConstantValue(module string, constantName string) ([]byte, error) {
+	txtModule := Text(module)
+	txtConstantName := Text(constantName)
+	switch {
+	case m.IsMetadataV4:
+		return m.AsMetadataV4.FindConstantValue(txtModule, txtConstantName)
+	case m.IsMetadataV7:
+		return m.AsMetadataV7.FindConstantValue(txtModule, txtConstantName)
+	case m.IsMetadataV8:
+		return m.AsMetadataV8.FindConstantValue(txtModule, txtConstantName)
+	case m.IsMetadataV9:
+		return m.AsMetadataV9.FindConstantValue(txtModule, txtConstantName)
+	case m.IsMetadataV10:
+		return m.AsMetadataV10.FindConstantValue(txtModule, txtConstantName)
+	case m.IsMetadataV11:
+		return m.AsMetadataV11.FindConstantValue(txtModule, txtConstantName)
+	case m.IsMetadataV12:
+		return m.AsMetadataV12.FindConstantValue(txtModule, txtConstantName)
+	case m.IsMetadataV13:
+		return m.AsMetadataV13.FindConstantValue(txtModule, txtConstantName)
+	default:
+		return nil, fmt.Errorf("unsupported metadata version")
 	}
 }

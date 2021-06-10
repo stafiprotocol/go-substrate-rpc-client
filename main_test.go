@@ -498,4 +498,11 @@ func TestV13(t *testing.T) {
 
 	t.Log(ok)
 	t.Log(index)
+
+	var e types.U128
+	err = api.RPC.State.GetConst("Balances", "ExistentialDeposit", &e)
+	if err != nil {
+		panic(err)
+	}
+	t.Log(e)
 }

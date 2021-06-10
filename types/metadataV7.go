@@ -85,6 +85,19 @@ func (m *MetadataV7) FindEventNamesForEventID(eventID EventID) (Text, Text, erro
 	return "", "", fmt.Errorf("module index %v out of range", eventID[0])
 }
 
+func (m *MetadataV7) FindConstantValue(module Text, constant Text) ([]byte, error) {
+	for _, mod := range m.Modules {
+		if mod.Name == module {
+			for _, cons := range mod.Constants {
+				if cons.Name == constant {
+					return cons.Value, nil
+				}
+			}
+		}
+	}
+	return nil, fmt.Errorf("could not find constant %s.%s", module, constant)
+}
+
 func (m *MetadataV7) FindStorageEntryMetadata(module string, fn string) (StorageEntryMetadata, error) {
 	for _, mod := range m.Modules {
 		if !mod.HasStorage {
@@ -237,6 +250,14 @@ func (s StorageFunctionMetadataV5) IsMap() bool {
 
 func (s StorageFunctionMetadataV5) IsDoubleMap() bool {
 	return s.Type.IsDoubleMap
+}
+
+func (s StorageFunctionMetadataV5) IsNMap() bool {
+	return false
+}
+
+func (s StorageFunctionMetadataV5) Hashers() ([]hash.Hash, error) {
+	return nil, fmt.Errorf("Hashers is not supported for metadata v5, please upgrade to use metadata v13 or newer")
 }
 
 func (s StorageFunctionMetadataV5) Hasher() (hash.Hash, error) {

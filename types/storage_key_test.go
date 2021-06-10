@@ -27,6 +27,16 @@ const (
 	AlicePubKey = "0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"
 )
 
+func TestCreateStorageKeyPlainV13(t *testing.T) {
+	m := ExamplaryMetadataV13
+
+	key, err := CreateStorageKey(m, "Timestamp", "Now", nil)
+	assert.NoError(t, err)
+	hex, err := Hex(key)
+	assert.NoError(t, err)
+	assert.Equal(t, "0xf0c365c3cf59d671eb72da0e7a4113c49f1f0515f462cdcf84e0f1d6045dfcbb", hex)
+}
+
 func TestCreateStorageKeyPlainV10(t *testing.T) {
 	m := ExamplaryMetadataV10
 
@@ -85,6 +95,16 @@ func TestCreateStorageKeyMapV4(t *testing.T) {
 	hex, err := Hex(key)
 	assert.NoError(t, err)
 	assert.Equal(t, "0x5c54163a1c72509b5250f0a30b9001fdee9d9b48388b06921f1b210e81e3a1f0", hex)
+}
+
+func TestCreateStorageKeyMapV13(t *testing.T) {
+	m := ExamplaryMetadataV13
+	b := MustHexDecodeString(AlicePubKey)
+	key, err := CreateStorageKey(m, "System", "Account", b)
+	assert.NoError(t, err)
+	hex, err := Hex(key)
+	assert.NoError(t, err)
+	assert.Equal(t, "0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da9de1e86a9a8c739864cf3cc5ec2bea59fd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d", hex)
 }
 
 func TestCreateStorageKeyDoubleMapV10(t *testing.T) {

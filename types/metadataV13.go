@@ -2,14 +2,16 @@ package types
 
 import (
 	"fmt"
+	"hash"
 	"strings"
 
 	"github.com/stafiprotocol/go-substrate-rpc-client/scale"
+	"github.com/stafiprotocol/go-substrate-rpc-client/xxhash"
 )
 
-// Modelled after packages/types/src/Metadata/v11/toV12.ts
 type MetadataV13 struct {
-	MetadataV12
+	Modules   []ModuleMetadataV13
+	Extrinsic ExtrinsicV11
 }
 
 func (m *MetadataV13) Decode(decoder scale.Decoder) error {
@@ -82,15 +84,6 @@ func (m *MetadataV13) FindStorageEntryMetadata(module string, fn string) (Storag
 	return nil, fmt.Errorf("module %v not found in metadata", module)
 }
 
-func (m *MetadataV13) ExistsModuleMetadata(module string) bool {
-	for _, mod := range m.Modules {
-		if string(mod.Name) == module {
-			return true
-		}
-	}
-	return false
-}
-
 func (m MetadataV13) GetConst(prefix, name string, res interface{}) error {
 	for _, mod := range m.Modules {
 		if string(mod.Name) == prefix {
@@ -104,10 +97,32 @@ func (m MetadataV13) GetConst(prefix, name string, res interface{}) error {
 	return fmt.Errorf("could not find constant %s.%s", prefix, name)
 }
 
+func (m *MetadataV13) FindConstantValue(module Text, constant Text) ([]byte, error) {
+	for _, mod := range m.Modules {
+		if mod.Name == module {
+			for _, cons := range mod.Constants {
+				if cons.Name == constant {
+					return cons.Value, nil
+				}
+			}
+		}
+	}
+	return nil, fmt.Errorf("could not find constant %s.%s", module, constant)
+}
+
+func (m *MetadataV13) ExistsModuleMetadata(module string) bool {
+	for _, mod := range m.Modules {
+		if string(mod.Name) == module {
+			return true
+		}
+	}
+	return false
+}
+
 type ModuleMetadataV13 struct {
 	Name       Text
 	HasStorage bool
-	Storage    StorageMetadataV10
+	Storage    StorageMetadataV13
 	HasCalls   bool
 	Calls      []FunctionMetadataV4
 	HasEvents  bool
@@ -225,4 +240,199 @@ func (m ModuleMetadataV13) Encode(encoder scale.Encoder) error {
 	}
 
 	return encoder.Encode(m.Index)
+}
+
+type StorageMetadataV13 struct {
+	Prefix Text
+	Items  []StorageFunctionMetadataV13
+}
+
+type StorageFunctionMetadataV13 struct {
+	Name          Text
+	Modifier      StorageFunctionModifierV0
+	Type          StorageFunctionTypeV13
+	Fallback      Bytes
+	Documentation []Text
+}
+
+func (s StorageFunctionMetadataV13) IsPlain() bool {
+	return s.Type.IsType
+}
+
+func (s StorageFunctionMetadataV13) IsMap() bool {
+	return s.Type.IsMap
+}
+
+func (s StorageFunctionMetadataV13) IsDoubleMap() bool {
+	return s.Type.IsDoubleMap
+}
+
+func (s StorageFunctionMetadataV13) IsNMap() bool {
+	return s.Type.IsNMap
+}
+
+func (s StorageFunctionMetadataV13) Hasher() (hash.Hash, error) {
+	if s.Type.IsMap {
+		return s.Type.AsMap.Hasher.HashFunc()
+	}
+	if s.Type.IsDoubleMap {
+		return s.Type.AsDoubleMap.Hasher.HashFunc()
+	}
+	if s.Type.IsNMap {
+		return nil, fmt.Errorf("only Map and DoubleMap have a Hasher")
+	}
+	return xxhash.New128(nil), nil
+}
+
+func (s StorageFunctionMetadataV13) Hasher2() (hash.Hash, error) {
+	if !s.Type.IsDoubleMap {
+		return nil, fmt.Errorf("only DoubleMaps have a Hasher2")
+	}
+	return s.Type.AsDoubleMap.Key2Hasher.HashFunc()
+}
+
+func (s StorageFunctionMetadataV13) Hashers() ([]hash.Hash, error) {
+	if !s.Type.IsNMap {
+		return nil, fmt.Errorf("only NMaps have Hashers")
+	}
+
+	var hashers []hash.Hash
+	if s.Type.IsMap {
+		hashers = make([]hash.Hash, 1)
+		mapHasher, err := s.Type.AsMap.Hasher.HashFunc()
+		if err != nil {
+			return nil, err
+		}
+		hashers[0] = mapHasher
+		return hashers, nil
+	}
+	if s.Type.IsDoubleMap {
+		hashers = make([]hash.Hash, 2)
+		if firstDoubleMapHasher, err := s.Type.AsDoubleMap.Hasher.HashFunc(); err != nil {
+			return nil, err
+		} else {
+			hashers[0] = firstDoubleMapHasher
+		}
+		secondDoubleMapHasher, err := s.Type.AsDoubleMap.Key2Hasher.HashFunc()
+		if err != nil {
+			return nil, err
+		}
+		hashers[1] = secondDoubleMapHasher
+		return hashers, nil
+	}
+	if s.Type.IsNMap {
+		hashers = make([]hash.Hash, len(s.Type.AsNMap.Hashers))
+		for i, hasher := range s.Type.AsNMap.Hashers {
+			hasherFn, err := hasher.HashFunc()
+			if err != nil {
+				return nil, err
+			}
+			hashers[i] = hasherFn
+		}
+		return hashers, nil
+	}
+
+	hashers = make([]hash.Hash, 1)
+	hashers[0] = xxhash.New128(nil)
+
+	return hashers, nil
+}
+
+type StorageFunctionTypeV13 struct {
+	IsType      bool
+	AsType      Type // 0
+	IsMap       bool
+	AsMap       MapTypeV10 // 1
+	IsDoubleMap bool
+	AsDoubleMap DoubleMapTypeV10 // 2
+	IsNMap      bool
+	AsNMap      NMapTypeV13 // 3
+}
+
+func (s *StorageFunctionTypeV13) Decode(decoder scale.Decoder) error {
+	var t uint8
+	err := decoder.Decode(&t)
+	if err != nil {
+		return err
+	}
+
+	switch t {
+	case 0:
+		s.IsType = true
+		err = decoder.Decode(&s.AsType)
+		if err != nil {
+			return err
+		}
+	case 1:
+		s.IsMap = true
+		err = decoder.Decode(&s.AsMap)
+		if err != nil {
+			return err
+		}
+	case 2:
+		s.IsDoubleMap = true
+		err = decoder.Decode(&s.AsDoubleMap)
+		if err != nil {
+			return err
+		}
+	case 3:
+		s.IsNMap = true
+		err = decoder.Decode(&s.AsNMap)
+		if err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("received unexpected type %v", t)
+	}
+	return nil
+}
+
+func (s StorageFunctionTypeV13) Encode(encoder scale.Encoder) error {
+	switch {
+	case s.IsType:
+		err := encoder.PushByte(0)
+		if err != nil {
+			return err
+		}
+		err = encoder.Encode(s.AsType)
+		if err != nil {
+			return err
+		}
+	case s.IsMap:
+		err := encoder.PushByte(1)
+		if err != nil {
+			return err
+		}
+		err = encoder.Encode(s.AsMap)
+		if err != nil {
+			return err
+		}
+	case s.IsDoubleMap:
+		err := encoder.PushByte(2)
+		if err != nil {
+			return err
+		}
+		err = encoder.Encode(s.AsDoubleMap)
+		if err != nil {
+			return err
+		}
+	case s.IsNMap:
+		err := encoder.PushByte(3)
+		if err != nil {
+			return err
+		}
+		err = encoder.Encode(s.AsNMap)
+		if err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("expected to be either type, map, double map or nmap but none was set: %v", s)
+	}
+	return nil
+}
+
+type NMapTypeV13 struct {
+	Keys    []Type
+	Hashers []StorageHasherV10
+	Value   Type
 }
