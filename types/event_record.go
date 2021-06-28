@@ -86,11 +86,13 @@ type EventRecords struct {
 	Staking_Bonded                     []EventStakingBonded                     //nolint:stylecheck,golint
 	Staking_Unbonded                   []EventStakingUnbonded                   //nolint:stylecheck,golint
 	Staking_Withdrawn                  []EventStakingWithdrawn                  //nolint:stylecheck,golint
+	Staking_Kicked                     []EventStakingKicked                     //nolint:stylecheck,golint
 	System_ExtrinsicSuccess            []EventSystemExtrinsicSuccess            //nolint:stylecheck,golint
 	System_ExtrinsicFailed             []EventSystemExtrinsicFailed             //nolint:stylecheck,golint
 	System_CodeUpdated                 []EventSystemCodeUpdated                 //nolint:stylecheck,golint
 	System_NewAccount                  []EventSystemNewAccount                  //nolint:stylecheck,golint
 	System_KilledAccount               []EventSystemKilledAccount               //nolint:stylecheck,golint
+	System_Remarked                    []EventSystemRemarked                    //nolint:stylecheck,golint
 	Assets_Issued                      []EventAssetIssued                       //nolint:stylecheck,golint
 	Assets_Transferred                 []EventAssetTransferred                  //nolint:stylecheck,golint
 	Assets_Destroyed                   []EventAssetDestroyed                    //nolint:stylecheck,golint
@@ -112,7 +114,7 @@ type EventRecords struct {
 	Democracy_PreimageReaped           []EventDemocracyPreimageReaped           //nolint:stylecheck,golint
 	Democracy_Unlocked                 []EventDemocracyUnlocked                 //nolint:stylecheck,golint
 	Council_Proposed                   []EventCollectiveProposed                //nolint:stylecheck,golint
-	Council_Voted                      []EventCollectiveProposed                //nolint:stylecheck,golint
+	Council_Voted                      []EventCollectiveVoted                   //nolint:stylecheck,golint
 	Council_Approved                   []EventCollectiveApproved                //nolint:stylecheck,golint
 	Council_Disapproved                []EventCollectiveDisapproved             //nolint:stylecheck,golint
 	Council_Executed                   []EventCollectiveExecuted                //nolint:stylecheck,golint
@@ -307,6 +309,9 @@ func (e EventRecordsRaw) DecodeEventRecords(m *Metadata, t interface{}) error {
 			}
 		}
 
+		//bytesData, _ := json.Marshal(holder.Elem().Interface())
+		//fmt.Println(fmt.Sprintf("%v_%v", moduleName, eventName), ":  ", string(bytesData))
+
 		// add the decoded event to the slice
 		field.Set(reflect.Append(field, holder.Elem()))
 
@@ -375,17 +380,29 @@ func (d *DispatchError) Decode(decoder scale.Decoder) error {
 	}
 
 	// https://github.com/paritytech/substrate/blob/4da29261bfdc13057a425c1721aeb4ec68092d42/primitives/runtime/src/lib.rs
-	// Line 391
+	// Line 447
 	// Enum index 3 for Module Error
 	if b == 3 {
 		d.HasModule = true
 		err = decoder.Decode(&d.Module)
-	}
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
+
+		err = decoder.Decode(&d.Error)
+		if err != nil {
+			return err
+		}
+	} else if b == 6 {
+		// Enum index 6 for token Error
+		err = decoder.Decode(&d.Error)
+		if err != nil {
+			return err
+		}
 	}
 
-	return decoder.Decode(&d.Error)
+	return nil
+
 }
 
 func (d DispatchError) Encode(encoder scale.Encoder) error {

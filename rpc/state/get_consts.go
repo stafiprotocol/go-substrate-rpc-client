@@ -9,6 +9,7 @@ const (
 	metaV10 = 10
 	metaV11 = 11
 	metaV12 = 12
+	metaV13 = 13
 )
 
 func (s *State) GetConst(prefix, name string, res interface{}) error {
@@ -22,6 +23,8 @@ func (s *State) GetConst(prefix, name string, res interface{}) error {
 
 func (s *State) GetConstWithMetadata(meta *types.Metadata, prefix, name string, res interface{}) error {
 	switch meta.Version {
+	case metaV13:
+		return meta.AsMetadataV13.GetConst(prefix, name, res)
 	case metaV12:
 		return meta.AsMetadataV12.GetConst(prefix, name, res)
 	case metaV11:
