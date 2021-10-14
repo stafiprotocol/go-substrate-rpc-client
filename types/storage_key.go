@@ -47,20 +47,45 @@ func CreateStorageKey(meta *Metadata, prefix, method string, args ...[]byte) (St
 	}
 
 	if entryMeta.IsNMap() {
-		return createKeyNMap(meta, method, prefix, args, entryMeta)
+		return createKeyNMap(method, prefix, args, entryMeta)
 	}
 
 	if entryMeta.IsDoubleMap() {
 		if len(args) != 2 {
 			return nil, fmt.Errorf("%v is a double map, therefore requires precisely two arguments. received: %d", method, len(args))
 		}
-		return createKeyDoubleMap(meta, method, prefix, stringKey, args[0], args[1], entryMeta)
+		return createKeyDoubleMap(meta.Version, method, prefix, stringKey, args[0], args[1], entryMeta)
 	}
 
 	//if len(args) != 1 {
 	//	return nil, fmt.Errorf("%v is a map, therefore requires precisely one argument. received: %d", method, len(args))
 	//}
-	return createKey(meta, method, prefix, stringKey, args[0], entryMeta)
+	return createKey(meta.Version, method, prefix, stringKey, args[0], entryMeta)
+}
+
+func CreateStorageKeyWithEntryMeta(version uint8, entryMeta StorageEntryMetadata, prefix, method string, args ...[]byte) (StorageKey, error) {
+	stringKey := []byte(prefix + " " + method)
+
+	//entryMeta, err := meta.FindStorageEntryMetadata(prefix, method)
+	//if err != nil {
+	//	return nil, err
+	//}
+
+	if entryMeta.IsNMap() {
+		return createKeyNMap(method, prefix, args, entryMeta)
+	}
+
+	if entryMeta.IsDoubleMap() {
+		if len(args) != 2 {
+			return nil, fmt.Errorf("%v is a double map, therefore requires precisely two arguments. received: %d", method, len(args))
+		}
+		return createKeyDoubleMap(version, method, prefix, stringKey, args[0], args[1], entryMeta)
+	}
+
+	//if len(args) != 1 {
+	//	return nil, fmt.Errorf("%v is a map, therefore requires precisely one argument. received: %d", method, len(args))
+	//}
+	return createKey(version, method, prefix, stringKey, args[0], entryMeta)
 }
 
 // Encode implements encoding for StorageKey, which just unwraps the bytes of StorageKey
@@ -88,11 +113,7 @@ func (s StorageKey) Hex() string {
 	return fmt.Sprintf("%#x", s)
 }
 
-func createKeyNMap(meta *Metadata, method, prefix string, args [][]byte, entryMeta StorageEntryMetadata) (StorageKey, error) {
-	if !meta.IsMetadataV13 {
-		return nil, fmt.Errorf("storage n map is only supported in metadata version 13 or up")
-	}
-
+func createKeyNMap(method, prefix string, args [][]byte, entryMeta StorageEntryMetadata) (StorageKey, error) {
 	hashers, err := entryMeta.Hashers()
 	if err != nil {
 		return nil, err
@@ -113,7 +134,7 @@ func createKeyNMap(meta *Metadata, method, prefix string, args [][]byte, entryMe
 }
 
 // createKeyDoubleMap creates a key for a DoubleMap type
-func createKeyDoubleMap(meta *Metadata, method, prefix string, stringKey, arg, arg2 []byte,
+func createKeyDoubleMap(version uint8, method, prefix string, stringKey, arg, arg2 []byte,
 	entryMeta StorageEntryMetadata) (StorageKey, error) {
 	if arg == nil || arg2 == nil {
 		return nil, fmt.Errorf("%v is a DoubleMap and requires two arguments", method)
@@ -129,7 +150,7 @@ func createKeyDoubleMap(meta *Metadata, method, prefix string, stringKey, arg, a
 		return nil, err
 	}
 
-	if meta.Version <= 8 {
+	if version <= 8 {
 		_, err := hasher.Write(append(stringKey, arg...))
 		if err != nil {
 			return nil, err
@@ -158,7 +179,7 @@ func createKeyDoubleMap(meta *Metadata, method, prefix string, stringKey, arg, a
 }
 
 // createKey creates a key for either a map or a plain value
-func createKey(meta *Metadata, method, prefix string, stringKey, arg []byte, entryMeta StorageEntryMetadata) (
+func createKey(version uint8, method, prefix string, stringKey, arg []byte, entryMeta StorageEntryMetadata) (
 	StorageKey, error) {
 	if entryMeta.IsMap() && arg == nil {
 		return nil, fmt.Errorf("%v is a Map and requires one argument", method)
@@ -169,7 +190,7 @@ func createKey(meta *Metadata, method, prefix string, stringKey, arg []byte, ent
 		return nil, err
 	}
 
-	if meta.Version <= 8 {
+	if version <= 8 {
 		_, err := hasher.Write(append(stringKey, arg...))
 		return hasher.Sum(nil), err
 	}

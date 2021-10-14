@@ -473,36 +473,49 @@ func Example_transactionWithEvents() {
 func TestV13(t *testing.T) {
 	url := "wss://kusama-rpc.polkadot.io"
 
-	api, err := gsrpc.NewSubstrateAPI(url)
+	_, err := gsrpc.NewSubstrateAPI(url)
 	if err != nil {
 		panic(err)
+	}
+}
+
+type StakingLedger struct {
+	Stash          types.AccountID
+	Total          types.UCompact
+	Active         types.UCompact
+	Unlocking      []UnlockChunk
+	ClaimedRewards []uint32
+}
+
+type UnlockChunk struct {
+	Value types.UCompact
+	Era   types.UCompact
+}
+
+func QueryStakingLeder(endpoint string, ac types.AccountID) (*StakingLedger, bool, error) {
+	api, err := gsrpc.NewSubstrateAPI(endpoint)
+	if err != nil {
+		return nil, false, err
 	}
 
 	meta, err := api.RPC.State.GetMetadataLatest()
 	if err != nil {
-		panic(err)
+		return nil, false, err
 	}
 
-	t.Log(meta.Version)
-
-	var index uint32
-	key, err := types.CreateStorageKey(meta, "Staking", "ActiveEra", nil, nil)
+	key, err := types.CreateStorageKey(meta, "Staking", "Ledger", ac[:], nil)
 	if err != nil {
-		panic(err)
+		return nil, false, err
 	}
 
-	ok, err := api.RPC.State.GetStorageLatest(key, &index)
+	ledger := new(StakingLedger)
+	ok, err := api.RPC.State.GetStorageLatest(key, ledger)
 	if err != nil {
-		panic(err)
+		return nil, false, err
 	}
 
-	t.Log(ok)
-	t.Log(index)
+	return ledger, ok, nil
+}
 
-	var e types.U128
-	err = api.RPC.State.GetConst("Balances", "ExistentialDeposit", &e)
-	if err != nil {
-		panic(err)
-	}
-	t.Log(e)
+func TestQueryStakingLeder(t *testing.T) {
 }

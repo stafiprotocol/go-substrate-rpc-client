@@ -277,6 +277,19 @@ func NewCall(m *Metadata, call string, args ...interface{}) (Call, error) {
 	return Call{c, a}, nil
 }
 
+func NewCallWithCallIndex(ci CallIndex, call string, args ...interface{}) (Call, error) {
+	var a []byte
+	for _, arg := range args {
+		e, err := EncodeToBytes(arg)
+		if err != nil {
+			return Call{}, err
+		}
+		a = append(a, e...)
+	}
+
+	return Call{ci, a}, nil
+}
+
 // Callindex is a 16 bit wrapper around the `[sectionIndex, methodIndex]` value that uniquely identifies a method
 type CallIndex struct {
 	SectionIndex uint8

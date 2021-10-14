@@ -22,7 +22,6 @@ import (
 	"github.com/stafiprotocol/go-substrate-rpc-client/rpc/chain"
 	"github.com/stafiprotocol/go-substrate-rpc-client/rpc/state"
 	"github.com/stafiprotocol/go-substrate-rpc-client/rpc/system"
-	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
 
 type RPC struct {
@@ -34,19 +33,10 @@ type RPC struct {
 }
 
 func NewRPC(cl client.Client) (*RPC, error) {
-	st := state.NewState(cl)
-	meta, err := st.GetMetadataLatest()
-	if err != nil {
-		return nil, err
-	}
-
-	opts := types.SerDeOptionsFromMetadata(meta)
-	types.SetSerDeOptions(opts)
-
 	return &RPC{
 		Author: author.NewAuthor(cl),
 		Chain:  chain.NewChain(cl),
-		State:  st,
+		State:  state.NewState(cl),
 		System: system.NewSystem(cl),
 		client: cl,
 	}, nil
