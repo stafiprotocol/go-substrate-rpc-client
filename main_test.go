@@ -473,10 +473,17 @@ func Example_transactionWithEvents() {
 func TestV13(t *testing.T) {
 	url := "wss://kusama-rpc.polkadot.io"
 
-	_, err := gsrpc.NewSubstrateAPI(url)
+	api, err := gsrpc.NewSubstrateAPI(url)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
+
+	genesisHash, err := api.RPC.Chain.GetBlockHash(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log(genesisHash.Hex())
 }
 
 type StakingLedger struct {
