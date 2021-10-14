@@ -98,7 +98,6 @@ func (m *Metadata) Decode(decoder scale.Decoder) error {
 		return err
 	}
 
-	fmt.Println("MagicNumber", MagicNumber)
 	if m.MagicNumber != MagicNumber {
 		return fmt.Errorf("magic number mismatch: expected %#x, found %#x", MagicNumber, m.MagicNumber)
 	}
@@ -107,8 +106,6 @@ func (m *Metadata) Decode(decoder scale.Decoder) error {
 	if err != nil {
 		return err
 	}
-
-	fmt.Println("Version", m.Version)
 
 	switch m.Version {
 	case 4:
