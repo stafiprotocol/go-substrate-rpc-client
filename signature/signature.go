@@ -22,8 +22,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/vedhavyas/go-subkey/v2"
-	"github.com/vedhavyas/go-subkey/v2/sr25519"
+	"github.com/stafiprotocol/go-substrate-rpc-client/sr25519"
+	"github.com/stafiprotocol/go-substrate-rpc-client/subkey"
 	"golang.org/x/crypto/blake2b"
 )
 
