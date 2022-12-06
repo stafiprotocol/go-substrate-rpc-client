@@ -30,12 +30,13 @@ var testSecretSeed = "0x167d9a020688544ea246b056799d6a771e97c9da057e4d0b87024537
 var testPubKey = "0xdc64bef918ddda3126a39a11113767741ddfdf91399f055e1d963f2ae1ec2535"
 var testAddressSS58 = "5H3gKVQU7DfNFfNGkgTrD7p715jjg7QXtat8X3UxiSyw7APW"
 var testKusamaAddressSS58 = "HZHyokLjagJ1KBiXPGu75B79g1yUnDiLxisuhkvCFCRrWBk"
+var defaultNetWork = uint16(42)
 
 func TestKeyRingPairFromSecretPhrase(t *testing.T) {
-	p, err := KeyringPairFromSecret(testSecretPhrase, "")
+	p, err := signature.KeyringPairFromSecret(testSecretPhrase, defaultNetWork)
 	assert.NoError(t, err)
 
-	assert.Equal(t, KeyringPair{
+	assert.Equal(t, signature.KeyringPair{
 		URI:       testSecretPhrase,
 		Address:   testAddressSS58,
 		PublicKey: types.MustHexDecodeString(testPubKey),
@@ -43,10 +44,10 @@ func TestKeyRingPairFromSecretPhrase(t *testing.T) {
 }
 
 func TestKeyringPairFromSecretSeed(t *testing.T) {
-	p, err := KeyringPairFromSecret(testSecretSeed, "")
+	p, err := signature.KeyringPairFromSecret(testSecretSeed, defaultNetWork)
 	assert.NoError(t, err)
 
-	assert.Equal(t, KeyringPair{
+	assert.Equal(t, signature.KeyringPair{
 		URI:       testSecretSeed,
 		Address:   testAddressSS58,
 		PublicKey: types.MustHexDecodeString(testPubKey),
@@ -54,10 +55,10 @@ func TestKeyringPairFromSecretSeed(t *testing.T) {
 }
 
 func TestKeyringPairFromSecretSeedAndNetwork(t *testing.T) {
-	p, err := KeyringPairFromSecret(testSecretSeed, "kusama")
+	p, err := signature.KeyringPairFromSecret(testSecretSeed, 2)
 	assert.NoError(t, err)
 
-	assert.Equal(t, KeyringPair{
+	assert.Equal(t, signature.KeyringPair{
 		URI:       testSecretSeed,
 		Address:   testKusamaAddressSS58,
 		PublicKey: types.MustHexDecodeString(testPubKey),
@@ -67,10 +68,10 @@ func TestKeyringPairFromSecretSeedAndNetwork(t *testing.T) {
 func TestSignAndVerify(t *testing.T) {
 	data := []byte("hello!")
 
-	sig, err := Sign(data, TestKeyringPairAlice.URI)
+	sig, err := signature.Sign(data, signature.TestKeyringPairAlice.URI)
 	assert.NoError(t, err)
 
-	ok, err := Verify(data, sig, types.HexEncodeToString(TestKeyringPairAlice.PublicKey))
+	ok, err := signature.Verify(data, sig, signature.TestKeyringPairAlice.URI)
 	assert.NoError(t, err)
 
 	assert.True(t, ok)
@@ -81,10 +82,10 @@ func TestSignAndVerifyLong(t *testing.T) {
 	_, err := rand.Read(data)
 	assert.NoError(t, err)
 
-	sig, err := Sign(data, TestKeyringPairAlice.URI)
+	sig, err := signature.Sign(data, signature.TestKeyringPairAlice.URI)
 	assert.NoError(t, err)
 
-	ok, err := Verify(data, sig, types.HexEncodeToString(TestKeyringPairAlice.PublicKey))
+	ok, err := signature.Verify(data, sig, signature.TestKeyringPairAlice.URI)
 	assert.NoError(t, err)
 
 	assert.True(t, ok)

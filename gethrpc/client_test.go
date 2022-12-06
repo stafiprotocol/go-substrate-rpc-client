@@ -202,36 +202,6 @@ func testClientCancel(transport string, t *testing.T) {
 	wg.Wait()
 }
 
-func TestClientSubscribeInvalidArg(t *testing.T) {
-	server := newTestServer()
-	defer server.Stop()
-	client := DialInProc(server)
-	defer client.Close()
-
-	check := func(shouldPanic bool, arg interface{}) {
-		defer func() {
-			err := recover()
-			if shouldPanic && err == nil {
-				t.Errorf("EthSubscribe should've panicked for %#v", arg)
-			}
-			if !shouldPanic && err != nil {
-				t.Errorf("EthSubscribe shouldn't have panicked for %#v", arg)
-				buf := make([]byte, 1024*1024)
-				buf = buf[:runtime.Stack(buf, false)]
-				t.Error(err)
-				t.Error(string(buf))
-			}
-		}()
-		client.EthSubscribe(context.Background(), arg, "foo_bar")
-	}
-	check(true, nil)
-	check(true, 1)
-	check(true, (chan int)(nil))
-	check(true, make(<-chan int))
-	check(false, make(chan int))
-	check(false, make(chan<- int))
-}
-
 func TestClientSubscribe(t *testing.T) {
 	server := newTestServer()
 	defer server.Stop()
