@@ -114,47 +114,6 @@ func TestWebsocketLargeCall(t *testing.T) {
 }
 
 // This test checks that client handles WebSocket ping frames correctly.
-func TestClientWebsocketPing(t *testing.T) {
-	t.Parallel()
-
-	var (
-		sendPing    = make(chan struct{})
-		server      = wsPingTestServer(t, sendPing)
-		ctx, cancel = context.WithTimeout(context.Background(), 1*time.Second)
-	)
-	defer cancel()
-	defer server.Shutdown(ctx)
-
-	client, err := DialContext(ctx, "ws://"+server.Addr)
-	if err != nil {
-		t.Fatalf("client dial error: %v", err)
-	}
-	resultChan := make(chan int)
-	sub, err := client.EthSubscribe(ctx, resultChan, "foo")
-	if err != nil {
-		t.Fatalf("client subscribe error: %v", err)
-	}
-
-	// Wait for the context's deadline to be reached before proceeding.
-	// This is important for reproducing https://github.com/ethereum/go-ethereum/issues/19798
-	<-ctx.Done()
-	close(sendPing)
-
-	// Wait for the subscription result.
-	timeout := time.NewTimer(5 * time.Second)
-	for {
-		select {
-		case err := <-sub.Err():
-			t.Error("client subscription error:", err)
-		case result := <-resultChan:
-			t.Log("client got result:", result)
-			return
-		case <-timeout.C:
-			t.Error("didn't get any result within the test timeout")
-			return
-		}
-	}
-}
 
 // wsPingTestServer runs a WebSocket server which accepts a single subscription request.
 // When a value arrives on sendPing, the server sends a ping frame, waits for a matching

@@ -152,7 +152,7 @@ func TestServerUnsubscribe(t *testing.T) {
 	}
 
 	// Unsubscribe and check that it is handled on the server side.
-	p2.Write([]byte(`{"jsonrpc":"2.0","method":"nftest2_unsubscribe","params":["` + sub.subid + `"]}`))
+	p2.Write([]byte(`{"jsonrpc":"2.0","method":"nftest2_unsubscribe","params":["` + fmt.Sprint(sub.subid) + `"]}`))
 	for {
 		select {
 		case id := <-service.unsubscribed:

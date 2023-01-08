@@ -3,8 +3,8 @@ package sr25519
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stafiprotocol/go-substrate-rpc-client/subkey"
+	"github.com/stretchr/testify/assert"
 )
 
 func fromHex(t *testing.T, hex string) []byte {
