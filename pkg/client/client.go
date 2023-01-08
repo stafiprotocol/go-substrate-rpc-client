@@ -21,7 +21,7 @@ import (
 	"log"
 
 	"github.com/stafiprotocol/go-substrate-rpc-client/config"
-	gethrpc "github.com/stafiprotocol/go-substrate-rpc-client/gethrpc"
+	gethrpc "github.com/stafiprotocol/go-substrate-rpc-client/pkg/gethrpc"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
 

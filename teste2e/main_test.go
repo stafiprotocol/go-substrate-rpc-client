@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"testing"
 
-	gsrpc "github.com/stafiprotocol/go-substrate-rpc-client"
 	"github.com/stafiprotocol/go-substrate-rpc-client/config"
+	"github.com/stafiprotocol/go-substrate-rpc-client/rpc"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -31,21 +31,21 @@ func TestEnd2end(t *testing.T) {
 		t.Skip("skipping end-to-end test in short mode.")
 	}
 
-	api, err := gsrpc.NewSubstrateAPI(config.Default().RPCURL)
+	rpcs, err := rpc.NewRPCS(config.Default().RPCURL)
 	assert.NoError(t, err)
 
 	fmt.Println()
-	fmt.Printf("Connected to node: %v\n", api.Client.URL())
+	fmt.Printf("Connected to node: %v\n", rpcs.Client.URL())
 	fmt.Println()
 
-	runtimeVersion, err := api.RPC.State.GetRuntimeVersionLatest()
+	runtimeVersion, err := rpcs.State.GetRuntimeVersionLatest()
 	assert.NoError(t, err)
 	fmt.Printf("authoringVersion: %v\n", runtimeVersion.AuthoringVersion)
 	fmt.Printf("specVersion: %v\n", runtimeVersion.SpecVersion)
 	fmt.Printf("implVersion: %v\n", runtimeVersion.ImplVersion)
 	fmt.Println()
 
-	hash, err := api.RPC.Chain.GetBlockHashLatest()
+	hash, err := rpcs.Chain.GetBlockHashLatest()
 	assert.NoError(t, err)
 	fmt.Printf("Latest block: %v\n", hash.Hex())
 	fmt.Printf("\tView in Polkadot/Substrate Apps: https://polkadot.js.org/apps/#/explorer/query/%v?"+
@@ -53,7 +53,7 @@ func TestEnd2end(t *testing.T) {
 	fmt.Printf("\tView in polkascan.io: https://polkascan.io/pre/kusama-cc2/block/%v\n", hash.Hex())
 	fmt.Println()
 
-	header, err := api.RPC.Chain.GetHeader(hash)
+	header, err := rpcs.Chain.GetHeader(hash)
 	assert.NoError(t, err)
 	fmt.Printf("Block number: %v\n", header.Number)
 	fmt.Printf("Parent hash: %v\n", header.ParentHash.Hex())
@@ -61,24 +61,24 @@ func TestEnd2end(t *testing.T) {
 	fmt.Printf("Extrinsics root: %v\n", header.ExtrinsicsRoot.Hex())
 	fmt.Println()
 
-	block, err := api.RPC.Chain.GetBlock(hash)
+	block, err := rpcs.Chain.GetBlock(hash)
 	assert.NoError(t, err)
 	fmt.Printf("Total extrinsics: %v\n", len(block.Block.Extrinsics))
 	fmt.Println()
 
-	finHead, err := api.RPC.Chain.GetFinalizedHead()
+	finHead, err := rpcs.Chain.GetFinalizedHead()
 	assert.NoError(t, err)
 	fmt.Printf("Last finalized block in the canon chain: %v\n", finHead.Hex())
 	fmt.Println()
 
-	meta, err := api.RPC.State.GetMetadataLatest()
+	meta, err := rpcs.State.GetMetadataLatest()
 	assert.NoError(t, err)
 
 	key, err := types.CreateStorageKey(meta, "Session", "Validators", nil, nil)
 	assert.NoError(t, err)
 
 	var validators []types.AccountID
-	ok, err := api.RPC.State.GetStorageLatest(key, &validators)
+	ok, err := rpcs.State.GetStorageLatest(key, &validators)
 	assert.NoError(t, err)
 	assert.True(t, ok)
 	fmt.Printf("Current validators:\n")

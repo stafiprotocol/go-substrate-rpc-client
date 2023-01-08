@@ -17,7 +17,7 @@
 package state
 
 import (
-	"github.com/stafiprotocol/go-substrate-rpc-client/client"
+	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/client"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
 

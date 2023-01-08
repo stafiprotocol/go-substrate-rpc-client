@@ -1,10 +1,11 @@
 package state
 
 import (
-	"github.com/stafiprotocol/go-substrate-rpc-client/client"
+	"testing"
+
+	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/client"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestState_GetConstWithMetadataV12(t *testing.T) {

@@ -17,27 +17,32 @@
 package rpc
 
 import (
-	"github.com/stafiprotocol/go-substrate-rpc-client/client"
+	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/client"
 	"github.com/stafiprotocol/go-substrate-rpc-client/rpc/author"
 	"github.com/stafiprotocol/go-substrate-rpc-client/rpc/chain"
 	"github.com/stafiprotocol/go-substrate-rpc-client/rpc/state"
 	"github.com/stafiprotocol/go-substrate-rpc-client/rpc/system"
 )
 
-type RPC struct {
+type RPCS struct {
 	Author *author.Author
 	Chain  *chain.Chain
 	State  *state.State
 	System *system.System
-	client client.Client
+	Client client.Client
 }
 
-func NewRPC(cl client.Client) (*RPC, error) {
-	return &RPC{
+func NewRPCS(endpoint string) (*RPCS, error) {
+	cl, err := client.Connect(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	return &RPCS{
 		Author: author.NewAuthor(cl),
 		Chain:  chain.NewChain(cl),
 		State:  state.NewState(cl),
 		System: system.NewSystem(cl),
-		client: cl,
+		Client: cl,
 	}, nil
 }

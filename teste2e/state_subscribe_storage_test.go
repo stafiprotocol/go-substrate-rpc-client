@@ -21,8 +21,8 @@ import (
 	"testing"
 	"time"
 
-	gsrpc "github.com/stafiprotocol/go-substrate-rpc-client"
 	"github.com/stafiprotocol/go-substrate-rpc-client/config"
+	"github.com/stafiprotocol/go-substrate-rpc-client/rpc"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -32,12 +32,12 @@ func TestState_SubscribeStorage_EventsRaw(t *testing.T) {
 		t.Skip("skipping end-to-end test in short mode.")
 	}
 
-	api, err := gsrpc.NewSubstrateAPI(config.Default().RPCURL)
+	rpcs, err := rpc.NewRPCS(config.Default().RPCURL)
 	if err != nil {
 		panic(err)
 	}
 
-	meta, err := api.RPC.State.GetMetadataLatest()
+	meta, err := rpcs.State.GetMetadataLatest()
 	if err != nil {
 		panic(err)
 	}
@@ -47,7 +47,7 @@ func TestState_SubscribeStorage_EventsRaw(t *testing.T) {
 		panic(err)
 	}
 
-	sub, err := api.RPC.State.SubscribeStorageRaw([]types.StorageKey{key})
+	sub, err := rpcs.State.SubscribeStorageRaw([]types.StorageKey{key})
 	if err != nil {
 		panic(err)
 	}
@@ -77,12 +77,12 @@ func TestState_SubscribeStorage_Events(t *testing.T) {
 		t.Skip("skipping end-to-end test in short mode.")
 	}
 
-	api, err := gsrpc.NewSubstrateAPI(config.Default().RPCURL)
+	rpcs, err := rpc.NewRPCS(config.Default().RPCURL)
 	if err != nil {
 		panic(err)
 	}
 
-	meta, err := api.RPC.State.GetMetadataLatest()
+	meta, err := rpcs.State.GetMetadataLatest()
 	if err != nil {
 		panic(err)
 	}
@@ -92,7 +92,7 @@ func TestState_SubscribeStorage_Events(t *testing.T) {
 		panic(err)
 	}
 
-	sub, err := api.RPC.State.SubscribeStorageRaw([]types.StorageKey{key})
+	sub, err := rpcs.State.SubscribeStorageRaw([]types.StorageKey{key})
 	if err != nil {
 		panic(err)
 	}

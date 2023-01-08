@@ -21,8 +21,8 @@ import (
 	"testing"
 	"time"
 
-	gsrpc "github.com/stafiprotocol/go-substrate-rpc-client"
 	"github.com/stafiprotocol/go-substrate-rpc-client/config"
+	"github.com/stafiprotocol/go-substrate-rpc-client/rpc"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -31,12 +31,12 @@ func TestState_SubscribeRuntimeVersion(t *testing.T) {
 		t.Skip("skipping end-to-end test in short mode.")
 	}
 
-	api, err := gsrpc.NewSubstrateAPI(config.Default().RPCURL)
+	rpcs, err := rpc.NewRPCS(config.Default().RPCURL)
 	if err != nil {
 		panic(err)
 	}
 
-	sub, err := api.RPC.State.SubscribeRuntimeVersion()
+	sub, err := rpcs.State.SubscribeRuntimeVersion()
 	if err != nil {
 		panic(err)
 	}

@@ -21,8 +21,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stafiprotocol/go-substrate-rpc-client/client"
-	"github.com/stafiprotocol/go-substrate-rpc-client/rpcmocksrv"
+	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/client"
+	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/rpcmocksrv"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
 

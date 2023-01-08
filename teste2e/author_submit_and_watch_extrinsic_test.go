@@ -21,8 +21,8 @@ import (
 	"testing"
 	"time"
 
-	gsrpc "github.com/stafiprotocol/go-substrate-rpc-client"
 	"github.com/stafiprotocol/go-substrate-rpc-client/config"
+	"github.com/stafiprotocol/go-substrate-rpc-client/rpc"
 	"github.com/stafiprotocol/go-substrate-rpc-client/signature"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 	"github.com/stretchr/testify/assert"
@@ -38,12 +38,12 @@ func TestAuthor_SubmitAndWatchExtrinsic(t *testing.T) {
 		t.Skip("skipping end-to-end that requires a private key because TEST_PRIV_KEY is not set or empty")
 	}
 
-	api, err := gsrpc.NewSubstrateAPI(config.Default().RPCURL)
+	rpcs, err := rpc.NewRPCS(config.Default().RPCURL)
 	if err != nil {
 		panic(err)
 	}
 
-	meta, err := api.RPC.State.GetMetadataLatest()
+	meta, err := rpcs.State.GetMetadataLatest()
 	if err != nil {
 		panic(err)
 	}
@@ -65,12 +65,12 @@ func TestAuthor_SubmitAndWatchExtrinsic(t *testing.T) {
 
 	era := types.ExtrinsicEra{IsMortalEra: false}
 
-	genesisHash, err := api.RPC.Chain.GetBlockHash(0)
+	genesisHash, err := rpcs.Chain.GetBlockHash(0)
 	if err != nil {
 		panic(err)
 	}
 
-	rv, err := api.RPC.State.GetRuntimeVersionLatest()
+	rv, err := rpcs.State.GetRuntimeVersionLatest()
 	if err != nil {
 		panic(err)
 	}
@@ -81,7 +81,7 @@ func TestAuthor_SubmitAndWatchExtrinsic(t *testing.T) {
 	}
 
 	var accountInfo types.AccountInfo
-	ok, err = api.RPC.State.GetStorageLatest(key, &accountInfo)
+	ok, err = rpcs.State.GetStorageLatest(key, &accountInfo)
 	if err != nil || !ok {
 		panic(err)
 	}
@@ -104,7 +104,7 @@ func TestAuthor_SubmitAndWatchExtrinsic(t *testing.T) {
 		panic(err)
 	}
 
-	sub, err := api.RPC.Author.SubmitAndWatchExtrinsic(ext)
+	sub, err := rpcs.Author.SubmitAndWatchExtrinsic(ext)
 	if err != nil {
 		panic(err)
 	}

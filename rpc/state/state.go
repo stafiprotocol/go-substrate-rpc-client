@@ -16,7 +16,7 @@
 
 package state
 
-import "github.com/stafiprotocol/go-substrate-rpc-client/client"
+import "github.com/stafiprotocol/go-substrate-rpc-client/pkg/client"
 
 // State exposes methods for querying state
 type State struct {

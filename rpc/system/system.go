@@ -17,7 +17,7 @@
 package system
 
 import (
-	"github.com/stafiprotocol/go-substrate-rpc-client/client"
+	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/client"
 )
 
 // System exposes methods for retrieval of system data

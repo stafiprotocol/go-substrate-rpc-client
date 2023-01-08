@@ -17,7 +17,7 @@
 package chain
 
 import (
-	"github.com/stafiprotocol/go-substrate-rpc-client/client"
+	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/client"
 )
 
 // Chain exposes methods for retrieval of chain data

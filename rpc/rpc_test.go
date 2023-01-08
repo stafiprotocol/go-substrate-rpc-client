@@ -1,4 +1,4 @@
-package gsrpc_test
+package rpc_test
 
 import (
 	"fmt"
@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	gsrpc "github.com/stafiprotocol/go-substrate-rpc-client"
 	"github.com/stafiprotocol/go-substrate-rpc-client/config"
+	"github.com/stafiprotocol/go-substrate-rpc-client/rpc"
 	"github.com/stafiprotocol/go-substrate-rpc-client/signature"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
@@ -15,20 +15,20 @@ import (
 func Example_simpleConnect() {
 	// The following example shows how to instantiate a Substrate API and use it to connect to a node
 
-	api, err := gsrpc.NewSubstrateAPI(config.Default().RPCURL)
+	rpcs, err := rpc.NewRPCS(config.Default().RPCURL)
 	if err != nil {
 		panic(err)
 	}
 
-	chain, err := api.RPC.System.Chain()
+	chain, err := rpcs.System.Chain()
 	if err != nil {
 		panic(err)
 	}
-	nodeName, err := api.RPC.System.Name()
+	nodeName, err := rpcs.System.Name()
 	if err != nil {
 		panic(err)
 	}
-	nodeVersion, err := api.RPC.System.Version()
+	nodeVersion, err := rpcs.System.Version()
 	if err != nil {
 		panic(err)
 	}
@@ -45,12 +45,12 @@ func Example_listenToNewBlocks() {
 	//
 	// NOTE: The example runs until 10 blocks are received or until you stop it with CTRL+C
 
-	api, err := gsrpc.NewSubstrateAPI(config.Default().RPCURL)
+	rpcs, err := rpc.NewRPCS(config.Default().RPCURL)
 	if err != nil {
 		panic(err)
 	}
 
-	sub, err := api.RPC.Chain.SubscribeNewHeads()
+	sub, err := rpcs.Chain.SubscribeNewHeads()
 	if err != nil {
 		panic(err)
 	}
@@ -76,12 +76,12 @@ func Example_listenToBalanceChange() {
 	//
 	// NOTE: The example runs until you stop it with CTRL+C
 
-	api, err := gsrpc.NewSubstrateAPI(config.Default().RPCURL)
+	rpcs, err := rpc.NewRPCS(config.Default().RPCURL)
 	if err != nil {
 		panic(err)
 	}
 
-	meta, err := api.RPC.State.GetMetadataLatest()
+	meta, err := rpcs.State.GetMetadataLatest()
 	if err != nil {
 		panic(err)
 	}
@@ -99,7 +99,7 @@ func Example_listenToBalanceChange() {
 
 	// Retrieve the initial balance
 	var previous types.U128
-	ok, err := api.RPC.State.GetStorageLatest(key, &previous)
+	ok, err := rpcs.State.GetStorageLatest(key, &previous)
 	if err != nil || !ok {
 		panic(err)
 	}
@@ -108,7 +108,7 @@ func Example_listenToBalanceChange() {
 	fmt.Printf("You may leave this example running and transfer any value to %#x\n", alice)
 
 	// Here we subscribe to any balance changes
-	sub, err := api.RPC.State.SubscribeStorageRaw([]types.StorageKey{key})
+	sub, err := rpcs.State.SubscribeStorageRaw([]types.StorageKey{key})
 	if err != nil {
 		panic(err)
 	}
@@ -143,12 +143,12 @@ func Example_unsubscribeFromListeningToUpdates() {
 	// In this example we're calling the built-in unsubscribe() function after a timeOut of 20s to cleanup and
 	// unsubscribe from listening to updates.
 
-	api, err := gsrpc.NewSubstrateAPI(config.Default().RPCURL)
+	rpcs, err := rpc.NewRPCS(config.Default().RPCURL)
 	if err != nil {
 		panic(err)
 	}
 
-	sub, err := api.RPC.Chain.SubscribeNewHeads()
+	sub, err := rpcs.Chain.SubscribeNewHeads()
 	if err != nil {
 		panic(err)
 	}
@@ -172,12 +172,12 @@ func Example_makeASimpleTransfer() {
 	// This sample shows how to create a transaction to make a transfer from one an account to another.
 
 	// Instantiate the API
-	api, err := gsrpc.NewSubstrateAPI(config.Default().RPCURL)
+	rpcs, err := rpc.NewRPCS(config.Default().RPCURL)
 	if err != nil {
 		panic(err)
 	}
 
-	meta, err := api.RPC.State.GetMetadataLatest()
+	meta, err := rpcs.State.GetMetadataLatest()
 	if err != nil {
 		panic(err)
 	}
@@ -196,12 +196,12 @@ func Example_makeASimpleTransfer() {
 	// Create the extrinsic
 	ext := types.NewExtrinsic(c)
 
-	genesisHash, err := api.RPC.Chain.GetBlockHash(0)
+	genesisHash, err := rpcs.Chain.GetBlockHash(0)
 	if err != nil {
 		panic(err)
 	}
 
-	rv, err := api.RPC.State.GetRuntimeVersionLatest()
+	rv, err := rpcs.State.GetRuntimeVersionLatest()
 	if err != nil {
 		panic(err)
 	}
@@ -212,7 +212,7 @@ func Example_makeASimpleTransfer() {
 	}
 
 	var accountInfo types.AccountInfo
-	ok, err := api.RPC.State.GetStorageLatest(key, &accountInfo)
+	ok, err := rpcs.State.GetStorageLatest(key, &accountInfo)
 	if err != nil || !ok {
 		panic(err)
 	}
@@ -235,7 +235,7 @@ func Example_makeASimpleTransfer() {
 	}
 
 	// Send the extrinsic
-	hash, err := api.RPC.Author.SubmitExtrinsic(ext)
+	hash, err := rpcs.Author.SubmitExtrinsic(ext)
 	if err != nil {
 		panic(err)
 	}
@@ -247,12 +247,11 @@ func Example_displaySystemEvents() {
 	// Query the system events and extract information from them. This example runs until exited via Ctrl-C
 
 	// Create our API with a default connection to the local node
-	api, err := gsrpc.NewSubstrateAPI(config.Default().RPCURL)
+	rpcs, err := rpc.NewRPCS(config.Default().RPCURL)
 	if err != nil {
 		panic(err)
 	}
-
-	meta, err := api.RPC.State.GetMetadataLatest()
+	meta, err := rpcs.State.GetMetadataLatest()
 	if err != nil {
 		panic(err)
 	}
@@ -263,7 +262,7 @@ func Example_displaySystemEvents() {
 		panic(err)
 	}
 
-	sub, err := api.RPC.State.SubscribeStorageRaw([]types.StorageKey{key})
+	sub, err := rpcs.State.SubscribeStorageRaw([]types.StorageKey{key})
 	if err != nil {
 		panic(err)
 	}
@@ -382,12 +381,12 @@ func Example_transactionWithEvents() {
 	// Display the events that occur during a transfer by sending a value to bob
 
 	// Instantiate the API
-	api, err := gsrpc.NewSubstrateAPI(config.Default().RPCURL)
+	rpcs, err := rpc.NewRPCS(config.Default().RPCURL)
 	if err != nil {
 		panic(err)
 	}
 
-	meta, err := api.RPC.State.GetMetadataLatest()
+	meta, err := rpcs.State.GetMetadataLatest()
 	if err != nil {
 		panic(err)
 	}
@@ -411,12 +410,12 @@ func Example_transactionWithEvents() {
 		panic(err)
 	}
 
-	genesisHash, err := api.RPC.Chain.GetBlockHash(0)
+	genesisHash, err := rpcs.Chain.GetBlockHash(0)
 	if err != nil {
 		panic(err)
 	}
 
-	rv, err := api.RPC.State.GetRuntimeVersionLatest()
+	rv, err := rpcs.State.GetRuntimeVersionLatest()
 	if err != nil {
 		panic(err)
 	}
@@ -428,7 +427,7 @@ func Example_transactionWithEvents() {
 	}
 
 	var accountInfo types.AccountInfo
-	ok, err := api.RPC.State.GetStorageLatest(key, &accountInfo)
+	ok, err := rpcs.State.GetStorageLatest(key, &accountInfo)
 	if err != nil || !ok {
 		panic(err)
 	}
@@ -453,7 +452,7 @@ func Example_transactionWithEvents() {
 	}
 
 	// Do the transfer and track the actual status
-	sub, err := api.RPC.Author.SubmitAndWatchExtrinsic(ext)
+	sub, err := rpcs.Author.SubmitAndWatchExtrinsic(ext)
 	if err != nil {
 		panic(err)
 	}
@@ -472,13 +471,12 @@ func Example_transactionWithEvents() {
 
 func TestV13(t *testing.T) {
 	url := "wss://kusama-rpc.polkadot.io"
-
-	api, err := gsrpc.NewSubstrateAPI(url)
+	rpcs, err := rpc.NewRPCS(url)
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
 
-	genesisHash, err := api.RPC.Chain.GetBlockHash(0)
+	genesisHash, err := rpcs.Chain.GetBlockHash(0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -500,12 +498,12 @@ type UnlockChunk struct {
 }
 
 func QueryStakingLeder(endpoint string, ac types.AccountID) (*StakingLedger, bool, error) {
-	api, err := gsrpc.NewSubstrateAPI(endpoint)
+	rpcs, err := rpc.NewRPCS(config.Default().RPCURL)
 	if err != nil {
-		return nil, false, err
+		panic(err)
 	}
 
-	meta, err := api.RPC.State.GetMetadataLatest()
+	meta, err := rpcs.State.GetMetadataLatest()
 	if err != nil {
 		return nil, false, err
 	}
@@ -516,13 +514,10 @@ func QueryStakingLeder(endpoint string, ac types.AccountID) (*StakingLedger, boo
 	}
 
 	ledger := new(StakingLedger)
-	ok, err := api.RPC.State.GetStorageLatest(key, ledger)
+	ok, err := rpcs.State.GetStorageLatest(key, ledger)
 	if err != nil {
 		return nil, false, err
 	}
 
 	return ledger, ok, nil
-}
-
-func TestQueryStakingLeder(t *testing.T) {
 }

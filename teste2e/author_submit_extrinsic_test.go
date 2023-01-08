@@ -21,20 +21,20 @@ import (
 	"testing"
 	"time"
 
-	gsrpc "github.com/stafiprotocol/go-substrate-rpc-client"
 	"github.com/stafiprotocol/go-substrate-rpc-client/config"
+	"github.com/stafiprotocol/go-substrate-rpc-client/rpc"
 	"github.com/stafiprotocol/go-substrate-rpc-client/signature"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
 
 func TestChain_Events(t *testing.T) {
 	targetURL := config.Default().RPCURL // Replace with desired endpoint
-	api, err := gsrpc.NewSubstrateAPI(targetURL)
+	rpcs, err := rpc.NewRPCS(targetURL)
 	if err != nil {
 		panic(err)
 	}
 
-	meta, err := api.RPC.State.GetMetadataLatest()
+	meta, err := rpcs.State.GetMetadataLatest()
 	if err != nil {
 		panic(err)
 	}
@@ -48,12 +48,12 @@ func TestChain_Events(t *testing.T) {
 
 	blockNUmber := uint64(0) // Replace with desired block to parse events
 
-	bh, err := api.RPC.Chain.GetBlockHash(blockNUmber)
+	bh, err := rpcs.Chain.GetBlockHash(blockNUmber)
 	if err != nil {
 		panic(err)
 	}
 
-	raw, err := api.RPC.State.GetStorageRaw(key, bh)
+	raw, err := rpcs.State.GetStorageRaw(key, bh)
 	if err != nil {
 		panic(err)
 	}
@@ -78,12 +78,12 @@ func TestChain_SubmitExtrinsic(t *testing.T) {
 		t.Skip("skipping end-to-end that requires a private key because TEST_PRIV_KEY is not set or empty")
 	}
 
-	api, err := gsrpc.NewSubstrateAPI(config.Default().RPCURL)
+	rpcs, err := rpc.NewRPCS(config.Default().RPCURL)
 	if err != nil {
 		panic(err)
 	}
 
-	meta, err := api.RPC.State.GetMetadataLatest()
+	meta, err := rpcs.State.GetMetadataLatest()
 	if err != nil {
 		panic(err)
 	}
@@ -100,19 +100,19 @@ func TestChain_SubmitExtrinsic(t *testing.T) {
 
 	ext := types.NewExtrinsic(c)
 
-	// blockHash, err := api.RPC.Chain.GetBlockHashLatest()
+	// blockHash, err := rpcs.Chain.GetBlockHashLatest()
 	// if err != nil {
 	// 	panic(err)
 	// }
 
 	era := types.ExtrinsicEra{IsMortalEra: false}
 
-	genesisHash, err := api.RPC.Chain.GetBlockHash(0)
+	genesisHash, err := rpcs.Chain.GetBlockHash(0)
 	if err != nil {
 		panic(err)
 	}
 
-	rv, err := api.RPC.State.GetRuntimeVersionLatest()
+	rv, err := rpcs.State.GetRuntimeVersionLatest()
 	if err != nil {
 		panic(err)
 	}
@@ -123,7 +123,7 @@ func TestChain_SubmitExtrinsic(t *testing.T) {
 	}
 
 	var accountInfo types.AccountInfo
-	ok, err = api.RPC.State.GetStorageLatest(key, &accountInfo)
+	ok, err = rpcs.State.GetStorageLatest(key, &accountInfo)
 	if err != nil || !ok {
 		panic(err)
 	}
@@ -156,14 +156,14 @@ func TestChain_SubmitExtrinsic(t *testing.T) {
 
 		fmt.Printf("Extrinsic: %#v\n", extEnc)
 
-		_, err = api.RPC.Author.SubmitExtrinsic(extI)
+		_, err = rpcs.Author.SubmitExtrinsic(extI)
 		if err != nil {
 			panic(err)
 		}
 	}
 
 	for i := 0; ; i++ {
-		xts, err := api.RPC.Author.PendingExtrinsics()
+		xts, err := rpcs.Author.PendingExtrinsics()
 		if err != nil {
 			panic(err)
 		}
