@@ -4,20 +4,18 @@ import (
 	"fmt"
 	"math/big"
 	"os"
-	"sync"
 	"testing"
-	"time"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/sirupsen/logrus"
 	"github.com/stafiprotocol/chainbridge/utils/crypto/sr25519"
+	"github.com/stafiprotocol/chainbridge/utils/keystore"
+	"github.com/stafiprotocol/go-substrate-rpc-client/client"
 	"github.com/stafiprotocol/go-substrate-rpc-client/config"
 	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/utils"
 	"github.com/stafiprotocol/go-substrate-rpc-client/submodel"
-
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/stafiprotocol/chainbridge/utils/keystore"
-	"github.com/stafiprotocol/go-substrate-rpc-client/client"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -53,27 +51,17 @@ func TestSarpcClient_GetChainEvents(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	//evt, err := sc.GetEvents(7112781)
-	//assert.NoError(t, err)
-	//for _, e := range evt {
-	//	t.Log(e.EventId)
-	//}
-
-	wg := sync.WaitGroup{}
-	for i := 746800; i <= 746824; i++ {
-		t.Log("i", i)
-		j := i
-		wg.Add(1)
-		go func() {
-			_, err := sc.GetEvents(uint64(j))
-			if err != nil {
-				time.Sleep(time.Second)
-				t.Log(err)
-			}
-			wg.Done()
-		}()
+	evt, err := sc.GetEvents(1251694)
+	assert.NoError(t, err)
+	for _, e := range evt {
+		t.Log(e.EventId)
+		if e.EventId == config.ExecuteBondAndSwapEventId {
+			t.Log(e.Params)
+			swap, err := client.ParseLiquidityBondAndSwapEvent(e)
+			assert.NoError(t, err)
+			t.Logf("%+v", swap)
+		}
 	}
-	wg.Wait()
 
 }
 

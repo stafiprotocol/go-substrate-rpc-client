@@ -1,19 +1,25 @@
 package client
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"math/big"
 	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/gorilla/websocket"
+	scale "github.com/itering/scale.go"
+	scaleTypes "github.com/itering/scale.go/types"
+	scaleBytes "github.com/itering/scale.go/types/scaleBytes"
+	"github.com/itering/scale.go/utiles"
+	"github.com/itering/substrate-api-rpc/rpc"
 	"github.com/stafiprotocol/go-substrate-rpc-client/config"
-	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/utils"
 	gsrpc "github.com/stafiprotocol/go-substrate-rpc-client/rpc"
-	"github.com/stafiprotocol/go-substrate-rpc-client/rpc/author"
 	"github.com/stafiprotocol/go-substrate-rpc-client/submodel"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
+	commonTypes "github.com/stafiprotocol/go-substrate-rpc-client/types/common"
+	"github.com/stafiprotocol/go-substrate-rpc-client/types/stafi"
 )
 
 func (sc *GsrpcClient) FlashApi() (*gsrpc.RPCS, error) {
@@ -175,116 +181,6 @@ func (sc *GsrpcClient) GetAccountInfo() (*types.AccountInfo, error) {
 	return ac, nil
 }
 
-func (sc *GsrpcClient) NewUnsignedExtrinsic(callMethod string, args ...interface{}) (interface{}, error) {
-	sc.log.Debug("Submitting substrate call...", "callMethod", callMethod, "addressType", sc.addressType, "sender", sc.key.Address)
-
-	ci, err := sc.FindCallIndex(callMethod)
-	if err != nil {
-		return nil, err
-	}
-	call, err := types.NewCallWithCallIndex(ci, callMethod, args...)
-	if err != nil {
-		return nil, err
-	}
-
-	if sc.addressType == AddressTypeAccountId {
-		unsignedExt := types.NewExtrinsic(call)
-		return &unsignedExt, nil
-	} else if sc.addressType == AddressTypeMultiAddress {
-		unsignedExt := types.NewExtrinsicMulti(call)
-		return &unsignedExt, nil
-	} else {
-		return nil, errors.New("addressType not supported")
-	}
-}
-
-func (sc *GsrpcClient) SignAndSubmitTx(ext interface{}) error {
-	err := sc.signExtrinsic(ext)
-	if err != nil {
-		return err
-	}
-	sc.log.Trace("signExtrinsic ok")
-
-	api, err := sc.FlashApi()
-	if err != nil {
-		return err
-	}
-	sc.log.Trace("flashApi ok")
-	// Do the transfer and track the actual status
-	sub, err := api.Author.SubmitAndWatch(ext)
-	if err != nil {
-		return err
-	}
-	sc.log.Trace("Extrinsic submission succeeded")
-	defer sub.Unsubscribe()
-
-	return sc.watchSubmission(sub)
-}
-
-func (sc *GsrpcClient) watchSubmission(sub *author.ExtrinsicStatusSubscription) error {
-	for {
-		select {
-		case <-sc.stop:
-			return ErrorTerminated
-		case status := <-sub.Chan():
-			switch {
-			case status.IsInBlock:
-				sc.log.Info("Extrinsic included in block", "block", status.AsInBlock.Hex())
-				return nil
-			case status.IsRetracted:
-				return fmt.Errorf("extrinsic retracted: %s", status.AsRetracted.Hex())
-			case status.IsDropped:
-				return fmt.Errorf("extrinsic dropped from network")
-			case status.IsInvalid:
-				return fmt.Errorf("extrinsic invalid")
-			}
-		case err := <-sub.Err():
-			sc.log.Trace("Extrinsic subscription error", "err", err)
-			return err
-		}
-	}
-}
-
-func (sc *GsrpcClient) signExtrinsic(xt interface{}) error {
-	rv, err := sc.GetLatestRuntimeVersion()
-	if err != nil {
-		return err
-	}
-
-	nonce, err := sc.GetLatestNonce()
-	if err != nil {
-		return err
-	}
-
-	o := types.SignatureOptions{
-		BlockHash:          sc.genesisHash,
-		Era:                types.ExtrinsicEra{IsMortalEra: false},
-		GenesisHash:        sc.genesisHash,
-		Nonce:              types.NewUCompactFromUInt(uint64(nonce)),
-		SpecVersion:        rv.SpecVersion,
-		Tip:                types.NewUCompactFromUInt(0),
-		TransactionVersion: rv.TransactionVersion,
-	}
-
-	if ext, ok := xt.(*types.Extrinsic); ok {
-		sc.log.Debug("signExtrinsic", "addressType", sc.addressType)
-		err = ext.Sign(*sc.key, o)
-		if err != nil {
-			return err
-		}
-	} else if ext, ok := xt.(*types.ExtrinsicMulti); ok {
-		sc.log.Debug("signExtrinsic", "addressType", sc.addressType)
-		err = ext.Sign(*sc.key, o)
-		if err != nil {
-			return fmt.Errorf("sign err: %s", err)
-		}
-	} else {
-		return errors.New("extrinsic cast error")
-	}
-
-	return nil
-}
-
 func (sc *GsrpcClient) PublicKey() []byte {
 	return sc.key.PublicKey
 }
@@ -301,141 +197,6 @@ func (sc *GsrpcClient) StakingLedger(ac types.AccountID) (*submodel.StakingLedge
 	}
 
 	return s, nil
-}
-
-func (sc *GsrpcClient) BondOrUnbondCall(bond, unbond *big.Int) (*submodel.MultiOpaqueCall, error) {
-	sc.log.Info("BondOrUnbondCall", "bond", bond, "unbond", unbond)
-	var method string
-	var val types.UCompact
-
-	if bond.Cmp(unbond) < 0 {
-		sc.log.Info("unbond larger than bond, UnbondCall")
-		diff := big.NewInt(0).Sub(unbond, bond)
-		method = config.MethodUnbond
-		val = types.NewUCompact(diff)
-	} else if bond.Cmp(unbond) > 0 {
-		sc.log.Info("bond larger than unbond, BondCall")
-		diff := big.NewInt(0).Sub(bond, unbond)
-		method = config.MethodBondExtra
-		val = types.NewUCompact(diff)
-	} else {
-		sc.log.Info("bond is equal to unbond, NoCall")
-		return nil, ErrorBondEqualToUnbond
-	}
-
-	ext, err := sc.NewUnsignedExtrinsic(method, val)
-	if err != nil {
-		return nil, err
-	}
-
-	return OpaqueCall(ext)
-}
-
-func (sc *GsrpcClient) WithdrawCall() (*submodel.MultiOpaqueCall, error) {
-	ext, err := sc.NewUnsignedExtrinsic(config.MethodWithdrawUnbonded, uint32(0))
-	if err != nil {
-		return nil, err
-	}
-
-	return OpaqueCall(ext)
-}
-
-func (sc *GsrpcClient) TransferCall(accountId []byte, value types.UCompact) (*submodel.MultiOpaqueCall, error) {
-	var addr interface{}
-	switch sc.addressType {
-	case AddressTypeAccountId:
-		addr = types.NewAddressFromAccountID(accountId)
-	case AddressTypeMultiAddress:
-		addr = types.NewMultiAddressFromAccountID(accountId)
-	default:
-		return nil, fmt.Errorf("addressType not supported: %s", sc.addressType)
-	}
-
-	ext, err := sc.NewUnsignedExtrinsic(config.MethodTransferKeepAlive, addr, value)
-	if err != nil {
-		return nil, err
-	}
-
-	return OpaqueCall(ext)
-}
-
-func (sc *GsrpcClient) BatchTransfer(receives []*submodel.Receive) error {
-	calls := make([]types.Call, 0)
-
-	ci, err := sc.FindCallIndex(config.MethodTransferKeepAlive)
-	if err != nil {
-		return err
-	}
-
-	for _, rec := range receives {
-		var addr interface{}
-		switch sc.addressType {
-		case AddressTypeAccountId:
-			addr = types.NewAddressFromAccountID(rec.Recipient)
-		case AddressTypeMultiAddress:
-			addr = types.NewMultiAddressFromAccountID(rec.Recipient)
-		default:
-			return fmt.Errorf("addressType not supported: %s", sc.addressType)
-		}
-
-		call, err := types.NewCallWithCallIndex(
-			ci,
-			config.MethodTransferKeepAlive,
-			addr,
-			rec.Value,
-		)
-		if err != nil {
-			return err
-		}
-		calls = append(calls, call)
-	}
-
-	ext, err := sc.NewUnsignedExtrinsic(config.MethodBatch, calls)
-	if err != nil {
-		return err
-	}
-
-	return sc.SignAndSubmitTx(ext)
-}
-
-func (sc *GsrpcClient) SingleTransferTo(accountId []byte, value types.UCompact) error {
-	var addr interface{}
-	switch sc.addressType {
-	case AddressTypeAccountId:
-		addr = types.NewAddressFromAccountID(accountId)
-	case AddressTypeMultiAddress:
-		addr = types.NewMultiAddressFromAccountID(accountId)
-	default:
-		return fmt.Errorf("unsupported address type: %s", sc.addressType)
-	}
-	ext, err := sc.NewUnsignedExtrinsic(config.MethodTransferKeepAlive, addr, value)
-	if err != nil {
-		return err
-	}
-	return sc.SignAndSubmitTx(ext)
-}
-
-func (sc *GsrpcClient) NominateCall(validators []types.Bytes) (*submodel.MultiOpaqueCall, error) {
-	targets := make([]interface{}, 0)
-	switch sc.addressType {
-	case AddressTypeAccountId:
-		for _, val := range validators {
-			targets = append(targets, types.NewAddressFromAccountID(val))
-		}
-	case AddressTypeMultiAddress:
-		for _, val := range validators {
-			targets = append(targets, types.NewMultiAddressFromAccountID(val))
-		}
-	default:
-		return nil, fmt.Errorf("addressType not supported: %s", sc.addressType)
-	}
-
-	ext, err := sc.NewUnsignedExtrinsic(config.MethodNominate, targets)
-	if err != nil {
-		return nil, err
-	}
-
-	return OpaqueCall(ext)
 }
 
 func (sc *GsrpcClient) FreeBalance(who []byte) (types.U128, error) {
@@ -525,34 +286,6 @@ func (sc *GsrpcClient) GetConst(prefix, name string, res interface{}) error {
 	default:
 		return errors.New("GetConst chainType not supported")
 	}
-}
-
-func OpaqueCall(ext interface{}) (*submodel.MultiOpaqueCall, error) {
-	var call types.Call
-	if xt, ok := ext.(*types.Extrinsic); ok {
-		call = xt.Method
-	} else if xt, ok := ext.(*types.ExtrinsicMulti); ok {
-		call = xt.Method
-	} else {
-		return nil, errors.New("extrinsic cast error")
-	}
-
-	opaque, err := types.EncodeToBytes(call)
-	if err != nil {
-		return nil, err
-	}
-
-	bz, err := types.EncodeToBytes(ext)
-	if err != nil {
-		return nil, err
-	}
-
-	callhash := utils.BlakeTwo256(opaque)
-	return &submodel.MultiOpaqueCall{
-		Extrinsic: hexutil.Encode(bz),
-		Opaque:    opaque,
-		CallHash:  hexutil.Encode(callhash[:]),
-	}, nil
 }
 
 func (sc *GsrpcClient) FindStorageEntryMetadata(module string, fn string) (types.StorageEntryMetadata, error) {
@@ -721,4 +454,223 @@ func TransformHasher(Hasher string) types.StorageHasherV10 {
 	}
 
 	return types.StorageHasherV10{IsIdentity: true}
+}
+
+func (sc *GsrpcClient) sendWsRequest(v interface{}, action []byte) error {
+
+	retry := 0
+	for {
+		if retry >= 100 {
+			return fmt.Errorf("sendWsRequest reach retry limit")
+		}
+
+		if poolConn, err := sc.initial(); err != nil {
+			return err
+		} else {
+			p := poolConn.Conn
+
+			if err = p.WriteMessage(websocket.TextMessage, action); err != nil {
+				poolConn.MarkUnusable()
+				poolConn.Close()
+
+				sc.log.Warn("websocket send error", "err", err)
+				time.Sleep(time.Millisecond * 100)
+				retry++
+				continue
+			}
+
+			if err = p.ReadJSON(v); err != nil {
+				poolConn.MarkUnusable()
+				poolConn.Close()
+
+				sc.log.Warn("websocket read error", "err", err)
+				time.Sleep(time.Millisecond * 100)
+				retry++
+				continue
+			}
+			poolConn.Close()
+			return nil
+		}
+	}
+}
+
+func (sc *GsrpcClient) GetBlock(blockHash string) (*rpc.Block, error) {
+	v := &rpc.JsonRpcResult{}
+	if err := sc.sendWsRequest(v, rpc.ChainGetBlock(wsId, blockHash)); err != nil {
+		return nil, err
+	}
+	rpcBlock := v.ToBlock()
+	return &rpcBlock.Block, nil
+}
+
+func (sc *GsrpcClient) GetExtrinsics(blockHash string) ([]*submodel.Transaction, error) {
+	blk, err := sc.GetBlock(blockHash)
+	if err != nil {
+		return nil, err
+	}
+
+	exts := make([]*submodel.Transaction, 0)
+	switch sc.chainType {
+	case ChainTypeStafi:
+		md, err := sc.getStafiMetaDecoder(blockHash)
+		if err != nil {
+			return nil, err
+		}
+		e := new(stafi.ExtrinsicDecoder)
+		option := stafi.ScaleDecoderOption{Metadata: &md.Metadata}
+		for _, raw := range blk.Extrinsics {
+			e.Init(stafi.ScaleBytes{Data: utiles.HexToBytes(raw)}, &option)
+			e.Process()
+			if e.ExtrinsicHash != "" && e.ContainsTransaction {
+				ext := &submodel.Transaction{
+					ExtrinsicHash:  e.ExtrinsicHash,
+					CallModuleName: e.CallModule.Name,
+					CallName:       e.Call.Name,
+					Address:        e.Address,
+					Params:         e.Params,
+				}
+				exts = append(exts, ext)
+			}
+		}
+		return exts, nil
+	case ChainTypePolkadot:
+		md, err := sc.getPolkaMetaDecoder(blockHash)
+		if err != nil {
+			return nil, err
+		}
+		e := new(scale.ExtrinsicDecoder)
+		option := scaleTypes.ScaleDecoderOption{Metadata: &md.Metadata}
+		for _, raw := range blk.Extrinsics {
+			e.Init(scaleBytes.ScaleBytes{Data: utiles.HexToBytes(raw)}, &option)
+			e.Process()
+			decodeExtrinsic := e.Value.(map[string]interface{})
+			var ce ChainExtrinsic
+			eb, _ := json.Marshal(decodeExtrinsic)
+			_ = json.Unmarshal(eb, &ce)
+			if e.ExtrinsicHash != "" && e.ContainsTransaction {
+				params := make([]commonTypes.ExtrinsicParam, 0)
+				for _, p := range e.Params {
+					params = append(params, commonTypes.ExtrinsicParam{
+						Name:  p.Name,
+						Type:  p.Type,
+						Value: p.Value,
+					})
+				}
+
+				ext := &submodel.Transaction{
+					ExtrinsicHash:  e.ExtrinsicHash,
+					CallModuleName: ce.CallModule,
+					CallName:       ce.CallModuleFunction,
+					Address:        e.Address,
+					Params:         params,
+				}
+				exts = append(exts, ext)
+			}
+		}
+		return exts, nil
+	default:
+		return nil, errors.New("chainType not supported")
+	}
+}
+
+func (sc *GsrpcClient) GetBlockHash(blockNum uint64) (string, error) {
+	v := &rpc.JsonRpcResult{}
+	if err := sc.sendWsRequest(v, rpc.ChainGetBlockHash(wsId, int(blockNum))); err != nil {
+		return "", fmt.Errorf("websocket get block hash error: %v", err)
+	}
+
+	blockHash, err := v.ToString()
+	if err != nil {
+		return "", fmt.Errorf("ChainGetBlockHash get error %v", err)
+	}
+	if blockHash == "" {
+		return "", fmt.Errorf("ChainGetBlockHash error, blockHash empty")
+	}
+
+	return blockHash, nil
+}
+
+func (sc *GsrpcClient) GetChainEvents(blockHash string) ([]*submodel.ChainEvent, error) {
+	v := &rpc.JsonRpcResult{}
+	if err := sc.sendWsRequest(v, rpc.StateGetStorage(wsId, storageKey, blockHash)); err != nil {
+		return nil, fmt.Errorf("websocket get event raw error: %v", err)
+	}
+	eventRaw, err := v.ToString()
+	if err != nil {
+		return nil, err
+	}
+
+	var events []*submodel.ChainEvent
+	switch sc.chainType {
+	case ChainTypeStafi:
+		md, err := sc.getStafiMetaDecoder(blockHash)
+		if err != nil {
+			return nil, err
+		}
+		e := stafi.EventsDecoder{}
+		option := stafi.ScaleDecoderOption{Metadata: &md.Metadata}
+		e.Init(stafi.ScaleBytes{Data: utiles.HexToBytes(eventRaw)}, &option)
+		e.Process()
+		b, err := json.Marshal(e.Value)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(b, &events)
+		if err != nil {
+			return nil, err
+		}
+
+	case ChainTypePolkadot:
+		md, err := sc.getPolkaMetaDecoder(blockHash)
+		if err != nil {
+			return nil, err
+		}
+		option := scaleTypes.ScaleDecoderOption{Metadata: &md.Metadata}
+
+		e := scale.EventsDecoder{}
+		e.Init(scaleBytes.ScaleBytes{Data: utiles.HexToBytes(eventRaw)}, &option)
+
+		e.Process()
+
+		b, err := json.Marshal(e.Value)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(b, &events)
+		if err != nil {
+			return nil, err
+		}
+
+	default:
+		return nil, errors.New("chainType not supported")
+	}
+
+	return events, nil
+}
+
+func (sc *GsrpcClient) GetEvents(blockNum uint64) ([]*submodel.ChainEvent, error) {
+	blockHash, err := sc.GetBlockHash(blockNum)
+	if err != nil {
+		return nil, err
+	}
+
+	evts, err := sc.GetChainEvents(blockHash)
+	if err != nil {
+		return nil, err
+	}
+
+	return evts, nil
+}
+
+func (sc *GsrpcClient) GetPaymentQueryInfo(encodedExtrinsic string) (paymentInfo *rpc.PaymentQueryInfo, err error) {
+	v := &rpc.JsonRpcResult{}
+	if err = sc.sendWsRequest(v, rpc.SystemPaymentQueryInfo(wsId, encodedExtrinsic)); err != nil {
+		return
+	}
+
+	paymentInfo = v.ToPaymentQueryInfo()
+	if paymentInfo == nil {
+		return nil, fmt.Errorf("get PaymentQueryInfo error")
+	}
+	return
 }
