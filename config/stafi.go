@@ -1,10 +1,13 @@
 package config
 
 const (
-	RTokenSeriesModuleId     = "RTokenSeries"
-	LiquidityBondEventId     = "LiquidityBond"
-	NominationUpdatedEventId = "NominationUpdated"
-	ValidatorUpdatedEventId  = "ValidatorUpdated"
+	RTokenSeriesModuleId = "RTokenSeries"
+
+	LiquidityBondEventId      = "LiquidityBond"
+	ExecuteBondAndSwapEventId = "ExecuteBondAndSwap"
+	NominationUpdatedEventId  = "NominationUpdated"
+	ValidatorUpdatedEventId   = "ValidatorUpdated"
+
 	StorageBondRecords       = "BondRecords"
 	StorageBondStates        = "BondStates"
 	MethodExecuteBondRecord  = "RTokenSeries.execute_bond_record"

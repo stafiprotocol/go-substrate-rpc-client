@@ -398,6 +398,23 @@ func (sc *GsrpcClient) BatchTransfer(receives []*submodel.Receive) error {
 	return sc.SignAndSubmitTx(ext)
 }
 
+func (sc *GsrpcClient) SingleTransferTo(accountId []byte, value types.UCompact) error {
+	var addr interface{}
+	switch sc.addressType {
+	case AddressTypeAccountId:
+		addr = types.NewAddressFromAccountID(accountId)
+	case AddressTypeMultiAddress:
+		addr = types.NewMultiAddressFromAccountID(accountId)
+	default:
+		return fmt.Errorf("unsupported address type: %s", sc.addressType)
+	}
+	ext, err := sc.NewUnsignedExtrinsic(config.MethodTransferKeepAlive, addr, value)
+	if err != nil {
+		return err
+	}
+	return sc.SignAndSubmitTx(ext)
+}
+
 func (sc *GsrpcClient) NominateCall(validators []types.Bytes) (*submodel.MultiOpaqueCall, error) {
 	targets := make([]interface{}, 0)
 	switch sc.addressType {
