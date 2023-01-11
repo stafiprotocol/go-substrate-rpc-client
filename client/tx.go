@@ -3,13 +3,9 @@ package client
 import (
 	"errors"
 	"fmt"
-	"math/big"
 
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/stafiprotocol/go-substrate-rpc-client/config"
-	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/utils"
 	"github.com/stafiprotocol/go-substrate-rpc-client/rpc/author"
-	"github.com/stafiprotocol/go-substrate-rpc-client/submodel"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
 
@@ -123,101 +119,6 @@ func (sc *GsrpcClient) signExtrinsic(xt interface{}) error {
 	return nil
 }
 
-func (sc *GsrpcClient) BondOrUnbondCall(bond, unbond *big.Int) (*submodel.MultiOpaqueCall, error) {
-	sc.log.Info("BondOrUnbondCall", "bond", bond, "unbond", unbond)
-	var method string
-	var val types.UCompact
-
-	if bond.Cmp(unbond) < 0 {
-		sc.log.Info("unbond larger than bond, UnbondCall")
-		diff := big.NewInt(0).Sub(unbond, bond)
-		method = config.MethodUnbond
-		val = types.NewUCompact(diff)
-	} else if bond.Cmp(unbond) > 0 {
-		sc.log.Info("bond larger than unbond, BondCall")
-		diff := big.NewInt(0).Sub(bond, unbond)
-		method = config.MethodBondExtra
-		val = types.NewUCompact(diff)
-	} else {
-		sc.log.Info("bond is equal to unbond, NoCall")
-		return nil, ErrorBondEqualToUnbond
-	}
-
-	ext, err := sc.NewUnsignedExtrinsic(method, val)
-	if err != nil {
-		return nil, err
-	}
-
-	return OpaqueCall(ext)
-}
-
-func (sc *GsrpcClient) WithdrawCall() (*submodel.MultiOpaqueCall, error) {
-	ext, err := sc.NewUnsignedExtrinsic(config.MethodWithdrawUnbonded, uint32(0))
-	if err != nil {
-		return nil, err
-	}
-
-	return OpaqueCall(ext)
-}
-
-func (sc *GsrpcClient) TransferCall(accountId []byte, value types.UCompact) (*submodel.MultiOpaqueCall, error) {
-	var addr interface{}
-	switch sc.addressType {
-	case AddressTypeAccountId:
-		addr = types.NewAddressFromAccountID(accountId)
-	case AddressTypeMultiAddress:
-		addr = types.NewMultiAddressFromAccountID(accountId)
-	default:
-		return nil, fmt.Errorf("addressType not supported: %s", sc.addressType)
-	}
-
-	ext, err := sc.NewUnsignedExtrinsic(config.MethodTransferKeepAlive, addr, value)
-	if err != nil {
-		return nil, err
-	}
-
-	return OpaqueCall(ext)
-}
-
-func (sc *GsrpcClient) BatchTransfer(receives []*submodel.Receive) error {
-	calls := make([]types.Call, 0)
-
-	ci, err := sc.FindCallIndex(config.MethodTransferKeepAlive)
-	if err != nil {
-		return err
-	}
-
-	for _, rec := range receives {
-		var addr interface{}
-		switch sc.addressType {
-		case AddressTypeAccountId:
-			addr = types.NewAddressFromAccountID(rec.Recipient)
-		case AddressTypeMultiAddress:
-			addr = types.NewMultiAddressFromAccountID(rec.Recipient)
-		default:
-			return fmt.Errorf("addressType not supported: %s", sc.addressType)
-		}
-
-		call, err := types.NewCallWithCallIndex(
-			ci,
-			config.MethodTransferKeepAlive,
-			addr,
-			rec.Value,
-		)
-		if err != nil {
-			return err
-		}
-		calls = append(calls, call)
-	}
-
-	ext, err := sc.NewUnsignedExtrinsic(config.MethodBatch, calls)
-	if err != nil {
-		return err
-	}
-
-	return sc.SignAndSubmitTx(ext)
-}
-
 func (sc *GsrpcClient) SingleTransferTo(accountId []byte, value types.UCompact) error {
 	var addr interface{}
 	switch sc.addressType {
@@ -233,55 +134,4 @@ func (sc *GsrpcClient) SingleTransferTo(accountId []byte, value types.UCompact) 
 		return err
 	}
 	return sc.SignAndSubmitTx(ext)
-}
-
-func (sc *GsrpcClient) NominateCall(validators []types.Bytes) (*submodel.MultiOpaqueCall, error) {
-	targets := make([]interface{}, 0)
-	switch sc.addressType {
-	case AddressTypeAccountId:
-		for _, val := range validators {
-			targets = append(targets, types.NewAddressFromAccountID(val))
-		}
-	case AddressTypeMultiAddress:
-		for _, val := range validators {
-			targets = append(targets, types.NewMultiAddressFromAccountID(val))
-		}
-	default:
-		return nil, fmt.Errorf("addressType not supported: %s", sc.addressType)
-	}
-
-	ext, err := sc.NewUnsignedExtrinsic(config.MethodNominate, targets)
-	if err != nil {
-		return nil, err
-	}
-
-	return OpaqueCall(ext)
-}
-
-func OpaqueCall(ext interface{}) (*submodel.MultiOpaqueCall, error) {
-	var call types.Call
-	if xt, ok := ext.(*types.Extrinsic); ok {
-		call = xt.Method
-	} else if xt, ok := ext.(*types.ExtrinsicMulti); ok {
-		call = xt.Method
-	} else {
-		return nil, errors.New("extrinsic cast error")
-	}
-
-	opaque, err := types.EncodeToBytes(call)
-	if err != nil {
-		return nil, err
-	}
-
-	bz, err := types.EncodeToBytes(ext)
-	if err != nil {
-		return nil, err
-	}
-
-	callhash := utils.BlakeTwo256(opaque)
-	return &submodel.MultiOpaqueCall{
-		Extrinsic: hexutil.Encode(bz),
-		Opaque:    opaque,
-		CallHash:  hexutil.Encode(callhash[:]),
-	}, nil
 }

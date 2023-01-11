@@ -3,9 +3,9 @@ package websocket_pool
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"sync"
 
+	"github.com/sirupsen/logrus"
 	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/recws"
 )
 
@@ -15,26 +15,30 @@ var (
 
 type Pool interface {
 	Get() (*PoolConn, error)
-	Close()
+	Put(*PoolConn) error
 	Len() int
 }
 
-type channelPool struct {
+type WsPool struct {
 	mu      sync.RWMutex
-	conns   chan *recws.RecConn
+	exist   map[*PoolConn]bool
+	conns   chan *PoolConn
 	factory Factory
 }
 
-type Factory func() (*recws.RecConn, error)
+type Factory func() (*PoolConn, error)
 
-func NewChannelPool(initialCap, maxCap int, factory Factory) (Pool, error) {
+func NewWsPool(initialCap, maxCap int, factory Factory) (Pool, error) {
 	if initialCap < 0 || maxCap <= 0 || initialCap > maxCap {
 		return nil, errors.New("invalid capacity settings")
 	}
-	c := &channelPool{
-		conns:   make(chan *recws.RecConn, maxCap),
+	c := &WsPool{
+		conns:   make(chan *PoolConn, maxCap),
+		exist:   map[*PoolConn]bool{},
 		factory: factory,
 	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	for i := 0; i < initialCap; i++ {
 		conn, err := factory()
 		if err != nil {
@@ -42,66 +46,92 @@ func NewChannelPool(initialCap, maxCap int, factory Factory) (Pool, error) {
 			return nil, fmt.Errorf("factory is not able to fill the pool: %s", err)
 		}
 		c.conns <- conn
+		c.exist[conn] = true
 	}
 	return c, nil
 }
 
-func (c *channelPool) getConnsAndFactory() (chan *recws.RecConn, Factory) {
-	c.mu.RLock()
+func (c *WsPool) getConnsAndFactory() (chan *PoolConn, Factory) {
 	conns := c.conns
 	factory := c.factory
-	c.mu.RUnlock()
 	return conns, factory
 }
 
-func (c *channelPool) Get() (*PoolConn, error) {
+func (c *WsPool) Get() (*PoolConn, error) {
 	conns, factory := c.getConnsAndFactory()
 	if conns == nil {
 		return nil, ErrClosed
 	}
+	logrus.Tracef("WsPool.Get pool len :%d", len(c.conns))
+
 	var err error
 	select {
 	case conn := <-conns:
-		if conn == nil || !conn.IsConnected() {
+		if conn == nil || !conn.Conn.IsConnected() {
+			c.mu.Lock()
+			delete(c.exist, conn)
+			c.mu.Unlock()
+
+			logrus.Trace("use factory reconnect")
 			conn, err = factory()
 			if err != nil {
 				return nil, err
 			}
+		} else {
+			c.mu.Lock()
+			delete(c.exist, conn)
+			c.mu.Unlock()
 		}
-		return c.wrapConn(conn), nil
+		return conn, nil
 	default:
 		conn, err := factory()
 		if err != nil {
 			return nil, err
 		}
-
-		return c.wrapConn(conn), nil
+		return conn, nil
 	}
 }
 
-func (c *channelPool) put(conn *recws.RecConn) error {
+func (c *WsPool) Put(conn *PoolConn) error {
 	if conn == nil {
 		return errors.New("connection is nil. rejecting")
 	}
+	conn.mu.Lock()
+	defer conn.mu.Unlock()
+
+	logrus.Tracef("WsPool.Put pool len :%d", len(c.conns))
+	if conn.unusable {
+		if conn.Conn != nil {
+			conn.Conn.Close()
+		}
+		return nil
+	}
 
 	c.mu.RLock()
-	defer c.mu.RUnlock()
+	if c.exist[conn] {
+		c.mu.RUnlock()
+		return nil
+	}
+	c.mu.RUnlock()
 
 	if c.conns == nil {
-		conn.Close()
+		conn.Conn.Close()
 		return nil
 	}
 
 	select {
 	case c.conns <- conn:
+		c.mu.Lock()
+		c.exist[conn] = true
+		c.mu.Unlock()
 		return nil
 	default:
-		conn.Close()
+		conn.Conn.Close()
 		return nil
 	}
 }
 
-func (c *channelPool) Close() {
+func (c *WsPool) Close() {
 	c.mu.Lock()
 	conns := c.conns
 	c.conns = nil
@@ -114,11 +144,13 @@ func (c *channelPool) Close() {
 
 	close(conns)
 	for conn := range conns {
-		conn.Close()
+		conn.Conn.Close()
 	}
 }
 
-func (c *channelPool) Len() int {
+func (c *WsPool) Len() int {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	conns, _ := c.getConnsAndFactory()
 	return len(conns)
 }
@@ -126,46 +158,19 @@ func (c *channelPool) Len() int {
 type PoolConn struct {
 	Conn     *recws.RecConn
 	mu       sync.RWMutex
-	c        *channelPool
 	unusable bool
-}
-
-// Close() puts the given connects back to the pool instead of closing it.
-func (p *PoolConn) Close() error {
-	p.mu.RLock()
-	defer p.mu.RUnlock()
-
-	if p.unusable {
-		if p.Conn != nil {
-			p.Conn.Close()
-			return nil
-		}
-		return nil
-	}
-	return p.c.put(p.Conn)
 }
 
 // MarkUnusable() marks the connection not usable any more, to let the pool close it instead of returning it to pool.
 func (p *PoolConn) MarkUnusable() {
 	p.mu.Lock()
+	defer p.mu.Unlock()
 	p.unusable = true
-	p.mu.Unlock()
 }
 
 // newConn wraps a standard net.Conn to a poolConn net.Conn.
-func (c *channelPool) wrapConn(conn *recws.RecConn) *PoolConn {
-	p := &PoolConn{c: c}
+func WrapConn(conn *recws.RecConn) *PoolConn {
+	p := &PoolConn{}
 	p.Conn = conn
 	return p
-}
-
-type WsConn interface {
-	Dial(urlStr string, reqHeader http.Header)
-	IsConnected() bool
-	Close()
-	WriteMessage(messageType int, data []byte) error
-	ReadMessage() (messageType int, message []byte, err error)
-	WriteJSON(v interface{}) error
-	ReadJSON(v interface{}) error
-	MarkUnusable()
 }

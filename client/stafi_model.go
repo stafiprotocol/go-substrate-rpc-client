@@ -3,13 +3,13 @@ package client
 import (
 	scale "github.com/itering/scale.go"
 	"github.com/itering/substrate-api-rpc/rpc"
+	"github.com/shopspring/decimal"
 	"github.com/stafiprotocol/go-substrate-rpc-client/signature"
-	"github.com/stafiprotocol/go-substrate-rpc-client/submodel"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
 
 type EraUpdated struct {
-	Symbol submodel.RSymbol
+	Symbol RSymbol
 	OldEra uint32
 	NewEra uint32
 }
@@ -17,19 +17,19 @@ type EraUpdated struct {
 type Transfer struct {
 	From   types.AccountID
 	To     types.AccountID
-	Symbol submodel.RSymbol
+	Symbol RSymbol
 	Value  types.U128
 }
 
 type Minted struct {
 	To     types.AccountID
-	Symbol submodel.RSymbol
+	Symbol RSymbol
 	Value  types.U128
 }
 
 type Burned struct {
 	From   types.AccountID
-	Symbol submodel.RSymbol
+	Symbol RSymbol
 	Value  types.U128
 }
 
@@ -37,7 +37,7 @@ type Burned struct {
 // RawEvent::LiquidityUnBond(who, symbol, pool, value, left_value, balance, recipient)
 type Unbond struct {
 	From      types.AccountID
-	Symbol    submodel.RSymbol
+	Symbol    RSymbol
 	Pool      types.Bytes
 	Value     types.U128
 	LeftValue types.U128
@@ -49,7 +49,7 @@ type Unbond struct {
 // Swap(AccountId, RSymbol, u128, u128, u128, bool, u128, u128),
 type RdexSwap struct {
 	From          types.AccountID
-	Symbol        submodel.RSymbol
+	Symbol        RSymbol
 	InputAmount   types.U128
 	OutputAmount  types.U128
 	FeeAmount     types.U128
@@ -62,7 +62,7 @@ type RdexSwap struct {
 // AddLiquidity(AccountId, RSymbol, u128, u128, u128, u128, u128, u128),
 type RdexAddLiquidity struct {
 	From          types.AccountID
-	Symbol        submodel.RSymbol
+	Symbol        RSymbol
 	FisAmount     types.U128
 	RTokenAmount  types.U128
 	NewTotalUnit  types.U128
@@ -75,7 +75,7 @@ type RdexAddLiquidity struct {
 // RemoveLiquidity(AccountId, RSymbol, u128, u128, u128, u128, bool, u128, u128),
 type RdexRemoveLiquidity struct {
 	From               types.AccountID
-	Symbol             submodel.RSymbol
+	Symbol             RSymbol
 	RemoveUnit         types.U128
 	SwapUnit           types.U128
 	RemoveFisAmount    types.U128
@@ -97,7 +97,7 @@ type RFisUnbond struct {
 // /// symbol, old_bonding_duration, new_bonding_duration
 // BondingDurationUpdated(RSymbol, u32, u32),
 type BondingDuration struct {
-	Symbol      submodel.RSymbol
+	Symbol      RSymbol
 	OldDuration types.U32
 	NewDuration types.U32
 }
@@ -112,13 +112,13 @@ type EraPayout struct {
 
 // RateSet(RSymbol, RateType)
 type RateSet struct {
-	Symbol submodel.RSymbol
+	Symbol RSymbol
 	Rate   types.U64
 }
 
 type MultiEventFlow struct {
 	EventId         string
-	Symbol          submodel.RSymbol
+	Symbol          RSymbol
 	EventData       interface{}
 	Block           uint64
 	Index           uint32
@@ -136,7 +136,7 @@ type EventNewMultisig struct {
 	Who, ID     types.AccountID
 	CallHash    types.Hash
 	CallHashStr string
-	TimePoint   *submodel.OptionTimePoint
+	TimePoint   *OptionTimePoint
 	Approvals   []types.AccountID
 }
 
@@ -156,7 +156,7 @@ type EventMultisigExecuted struct {
 }
 
 type MultiCallParam struct {
-	TimePoint *submodel.OptionTimePoint
+	TimePoint *OptionTimePoint
 	Opaque    []byte
 	Extrinsic string
 	CallHash  string
@@ -184,32 +184,24 @@ type MultiOpaqueCall struct {
 	Extrinsic string
 	Opaque    []byte
 	CallHash  string
-	TimePoint *submodel.OptionTimePoint
-}
-
-type Transaction struct {
-	ExtrinsicHash  string
-	CallModuleName string
-	CallName       string
-	Address        interface{}
-	Params         []scale.ExtrinsicParam
+	TimePoint *OptionTimePoint
 }
 
 type TransInfoSingle struct {
 	Block      uint64
 	Index      uint32
-	DestSymbol submodel.RSymbol
+	DestSymbol RSymbol
 	Info       TransInfo
 }
 
 type TransInfoList struct {
 	Block      uint64
-	DestSymbol submodel.RSymbol
+	DestSymbol RSymbol
 	List       []TransInfo
 }
 
 type TransInfoKey struct {
-	Symbol submodel.RSymbol
+	Symbol RSymbol
 	Block  uint64
 }
 
@@ -221,23 +213,23 @@ type TransInfo struct {
 }
 
 type TransResultWithBlock struct {
-	Symbol submodel.RSymbol
+	Symbol RSymbol
 	Block  uint64
 }
 
 type TransResultWithIndex struct {
-	Symbol submodel.RSymbol
+	Symbol RSymbol
 	Block  uint64
 	Index  uint32
 }
 
 type GetLatestDealBLockParam struct {
-	Symbol submodel.RSymbol
+	Symbol RSymbol
 	Block  chan uint64
 }
 
 type GetSignaturesParam struct {
-	Symbol     submodel.RSymbol
+	Symbol     RSymbol
 	Block      uint64
 	ProposalId []byte
 	Signatures chan []types.Bytes
@@ -249,7 +241,7 @@ type GetSignaturesKey struct {
 }
 
 type SubmitSignatureParams struct {
-	Symbol     submodel.RSymbol
+	Symbol     RSymbol
 	Block      types.U64
 	ProposalId types.Bytes
 	Signature  types.Bytes
@@ -270,9 +262,31 @@ type MintRewardAct struct {
 
 type EvtExecuteBondAndSwap struct {
 	AccountId     types.AccountID
-	Symbol        submodel.RSymbol
+	Symbol        RSymbol
 	BondId        types.Hash
 	Amount        types.U128
 	DestRecipient types.Bytes
 	DestId        types.U8
+}
+
+type ChainExtrinsic struct {
+	ID                 uint            `gorm:"primary_key"`
+	ExtrinsicIndex     string          `json:"extrinsic_index" sql:"default: null;size:100"`
+	BlockNum           int             `json:"block_num" `
+	BlockTimestamp     int             `json:"block_timestamp"`
+	ExtrinsicLength    string          `json:"extrinsic_length"`
+	VersionInfo        string          `json:"version_info"`
+	CallCode           string          `json:"call_code"`
+	CallModuleFunction string          `json:"call_module_function"  sql:"size:100"`
+	CallModule         string          `json:"call_module"  sql:"size:100"`
+	Params             interface{}     `json:"params" sql:"type:MEDIUMTEXT;" `
+	AccountId          string          `json:"account_id"`
+	Signature          string          `json:"signature"`
+	Nonce              int             `json:"nonce"`
+	Era                string          `json:"era"`
+	ExtrinsicHash      string          `json:"extrinsic_hash" sql:"default: null" `
+	IsSigned           bool            `json:"is_signed"`
+	Success            bool            `json:"success"`
+	Fee                decimal.Decimal `json:"fee" sql:"type:decimal(30,0);"`
+	BatchIndex         int             `json:"-" gorm:"-"`
 }

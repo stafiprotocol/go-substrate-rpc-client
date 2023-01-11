@@ -1,4 +1,4 @@
-package submodel
+package client
 
 import (
 	"github.com/stafiprotocol/go-substrate-rpc-client/scale"

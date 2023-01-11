@@ -13,7 +13,6 @@ import (
 	"github.com/stafiprotocol/go-substrate-rpc-client/client"
 	"github.com/stafiprotocol/go-substrate-rpc-client/config"
 	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/utils"
-	"github.com/stafiprotocol/go-substrate-rpc-client/submodel"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -74,7 +73,7 @@ func TestSarpcClient_GetChainEventNominationUpdated(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	symbz, err := types.EncodeToBytes(submodel.RKSM)
+	symbz, err := types.EncodeToBytes(client.RKSM)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -300,7 +299,7 @@ func TestActive(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ledger := new(submodel.StakingLedger)
+	ledger := new(client.StakingLedger)
 	exist, err := sc.QueryStorage(config.StakingModuleId, config.StorageLedger, mac.AsID[:], nil, ledger)
 	if err != nil {
 		t.Fatal(err)
@@ -322,7 +321,7 @@ func TestActive1(t *testing.T) {
 	b, _ := hexutil.Decode(a) // work
 	//mac, err := types.NewAddressFromHexAccountID(a) // work
 	//mac, err := types.NewMultiAddressFromHexAccountID(a) // work
-	ledger := new(submodel.StakingLedger)
+	ledger := new(client.StakingLedger)
 	exist, err := sc.QueryStorage(config.StakingModuleId, config.StorageLedger, b, nil, ledger)
 	if err != nil {
 		t.Fatal(err)
@@ -380,55 +379,56 @@ func Test_KSM_GsrpcClient_Multisig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	_ = sc
 
 	//pool, err := hexutil.Decode("ac0df419ce0dc61b092a5cfa06a28e40cd82bc9de7e8c1e5591169360d66ba3c")
 	//assert.NoError(t, err)
 
-	threshold := uint16(2)
-	//wen, _ := types.NewAddressFromHexAccountID("0x26db25c52b007221331a844e5335e59874e45b03e81c3d76ff007377c2c17965")
-	// jun, _ := types.NewAddressFromHexAccountID("0x765f3681fcc33aba624a09833455a3fd971d6791a8f2c57440626cd119530860")
-	relay2, _ := types.NewMultiAddressFromHexAccountID("0x2afeb305f32a12507a6b211d818218577b0e425692766b08b8bc5d714fccac3b")
+	// threshold := uint16(2)
+	// //wen, _ := types.NewAddressFromHexAccountID("0x26db25c52b007221331a844e5335e59874e45b03e81c3d76ff007377c2c17965")
+	// // jun, _ := types.NewAddressFromHexAccountID("0x765f3681fcc33aba624a09833455a3fd971d6791a8f2c57440626cd119530860")
+	// relay2, _ := types.NewMultiAddressFromHexAccountID("0x2afeb305f32a12507a6b211d818218577b0e425692766b08b8bc5d714fccac3b")
 
-	others := []types.AccountID{
-		relay2.AsID,
-	}
+	// others := []types.AccountID{
+	// 	relay2.AsID,
+	// }
 
 	//for _, oth := range others {
 	//	fmt.Println(hexutil.Encode(oth[:]))
 	//}
 
-	bond, _ := utils.StringToBigint("1000000000000")
-	unbond := big.NewInt(0)
+	// bond, _ := utils.StringToBigint("1000000000000")
+	// unbond := big.NewInt(0)
 
-	call, err := sc.BondOrUnbondCall(bond, unbond)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// call, err := sc.BondOrUnbondCall(bond, unbond)
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
 
-	h := utils.BlakeTwo256(call.Opaque)
-	t.Log("Extrinsic", call.Extrinsic)
-	t.Log("Opaque", hexutil.Encode(call.Opaque))
-	t.Log("callHash", hexutil.Encode(h[:]))
+	// h := utils.BlakeTwo256(call.Opaque)
+	// t.Log("Extrinsic", call.Extrinsic)
+	// t.Log("Opaque", hexutil.Encode(call.Opaque))
+	// t.Log("callHash", hexutil.Encode(h[:]))
 
-	info, err := sc.GetPaymentQueryInfo(call.Extrinsic)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log("info", info.Class, info.PartialFee, info.Weight)
+	// info, err := sc.GetPaymentQueryInfo(call.Extrinsic)
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
+	// t.Log("info", info.Class, info.PartialFee, info.Weight)
 
 	//optp := types.TimePoint{Height: 1964877, Index: 1}
 	//tp := submodel.NewOptionTimePoint(optp)
 
-	tp := submodel.NewOptionTimePointEmpty()
-	ext, err := sc.NewUnsignedExtrinsic(config.MethodAsMulti, threshold, others, tp, call.Opaque, false, info.Weight)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// tp := client.NewOptionTimePointEmpty()
+	// ext, err := sc.NewUnsignedExtrinsic(config.MethodAsMulti, threshold, others, tp, call.Opaque, false, info.Weight)
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
 
-	err = sc.SignAndSubmitTx(ext)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// err = sc.SignAndSubmitTx(ext)
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
 }
 func Test_KSM_GsrpcClient_transfer(t *testing.T) {
 

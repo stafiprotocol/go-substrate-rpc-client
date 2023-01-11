@@ -1,4 +1,4 @@
-package submodel
+package client
 
 import (
 	"fmt"
@@ -15,6 +15,7 @@ const (
 	RSOL   = RSymbol("RSOL")
 	RMATIC = RSymbol("RMATIC")
 	RBNB   = RSymbol("RBNB")
+	RETH   = RSymbol("RETH")
 )
 
 func (r *RSymbol) Decode(decoder scale.Decoder) error {
@@ -25,8 +26,8 @@ func (r *RSymbol) Decode(decoder scale.Decoder) error {
 
 	switch b {
 	case 0:
-		//*r = RFIS
-		return fmt.Errorf("RSymbol decode error: %d", b)
+		*r = RFIS
+		// return fmt.Errorf("RSymbol decode error: %d", b)
 	case 1:
 		*r = RDOT
 	case 2:
@@ -39,6 +40,8 @@ func (r *RSymbol) Decode(decoder scale.Decoder) error {
 		*r = RMATIC
 	case 6:
 		*r = RBNB
+	case 7:
+		*r = RETH
 	default:
 		return fmt.Errorf("RSymbol decode error: %d", b)
 	}
@@ -49,8 +52,8 @@ func (r *RSymbol) Decode(decoder scale.Decoder) error {
 func (r RSymbol) Encode(encoder scale.Encoder) error {
 	switch r {
 	case RFIS:
-		//return encoder.PushByte(0)
-		return fmt.Errorf("RFIS not supported")
+		return encoder.PushByte(0)
+		// return fmt.Errorf("RFIS not supported")
 	case RDOT:
 		return encoder.PushByte(1)
 	case RKSM:
@@ -63,7 +66,37 @@ func (r RSymbol) Encode(encoder scale.Encoder) error {
 		return encoder.PushByte(5)
 	case RBNB:
 		return encoder.PushByte(6)
+	case RETH:
+		return encoder.PushByte(7)
 	default:
 		return fmt.Errorf("RSymbol %s not supported", r)
 	}
+}
+
+// used in db of rtoken-info
+func (r RSymbol) ToRtokenType() int8 {
+	switch r {
+	case RFIS:
+		return (0)
+	case RDOT:
+		return (1)
+	case RKSM:
+		return (2)
+	case RATOM:
+		return (3)
+	case RSOL:
+		return (4)
+	case RMATIC:
+		return (5)
+	case RBNB:
+		return (6)
+	case RETH:
+		return (-1)
+	default:
+		return -2
+	}
+}
+
+func (r RSymbol) ToString() string {
+	return string(r)
 }

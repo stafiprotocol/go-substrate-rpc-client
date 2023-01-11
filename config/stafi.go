@@ -8,6 +8,13 @@ const (
 	NominationUpdatedEventId  = "NominationUpdated"
 	ValidatorUpdatedEventId   = "ValidatorUpdated"
 
+	RClaimModuleId = "RClaim"
+
+	StorageActLatestCycle     = "ActLatestCycle"
+	StorageREthActLatestCycle = "REthActLatestCycle"
+	StorageActs               = "Acts"
+	StorageREthActs           = "REthActs"
+
 	StorageBondRecords       = "BondRecords"
 	StorageBondStates        = "BondStates"
 	MethodExecuteBondRecord  = "RTokenSeries.execute_bond_record"
@@ -18,9 +25,12 @@ const (
 	StorageVotes               = "Votes"
 	MethodRacknowledgeProposal = "RTokenVotes.acknowledge_proposal"
 
-	RTokenLedgerModuleId                      = "RTokenLedger"
+	RTokenLedgerModuleId   = "RTokenLedger"
+	EraPoolUpdatedEventId  = "EraPoolUpdated"
+	EraUpdatedEventId      = "EraUpdated"
+	BondingDurationEventId = "BondingDurationUpdated"
+
 	RTokenRelayersModuleId                    = "Relayers"
-	EraPoolUpdatedEventId                     = "EraPoolUpdated"
 	StorageChainEras                          = "ChainEras"
 	StorageCurrentEraSnapShots                = "CurrentEraSnapShots"
 	StorageRelayerThreshold                   = "RelayerThreshold"
@@ -49,4 +59,25 @@ const (
 	SignaturesEnoughEventId                   = "SignaturesEnough"
 	StorageSignatures                         = "Signatures"
 	SubmitSignatures                          = "RTokenSeries.submit_signatures"
+
+	RTokenUnbondEventId = "LiquidityUnBond"
+
+	RTokenBalanceModuleId = "RBalances"
+	RTokenTransferEventId = "Transfer"
+	RTokenMintedEventId   = "Minted"
+	RTokenBurnedEventId   = "Burned"
+
+	RTokenRateModuleId   = "RTokenRate"
+	RTokenRateSetEventId = "RateSet"
+	StorageEraRate       = "EraRate"
+
+	RFisModuleId      = "RFis"
+	RFisUnbondEventId = "LiquidityUnBond"
+
+	EraPayoutEventId = "EraPayout"
+
+	RDexSwapModuleId        = "RDexSwap"
+	RDexSwapEventId         = "Swap"
+	RDexAddLiquidityEventId = "AddLiquidity"
+	RDexRmLiquidityEventId  = "RemoveLiquidity"
 )

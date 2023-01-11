@@ -12,7 +12,6 @@ import (
 	"github.com/itering/scale.go/utiles"
 	"github.com/shopspring/decimal"
 	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/utils"
-	"github.com/stafiprotocol/go-substrate-rpc-client/submodel"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 )
 
@@ -54,13 +53,13 @@ func parseAccountId(value interface{}) (types.AccountID, error) {
 	return types.NewAccountID(ac), nil
 }
 
-func parseRsymbol(value interface{}) (submodel.RSymbol, error) {
+func parseRsymbol(value interface{}) (RSymbol, error) {
 	sym, ok := value.(string)
 	if !ok {
-		return submodel.RSymbol(""), ErrValueNotString
+		return RSymbol(""), ErrValueNotString
 	}
 
-	return submodel.RSymbol(sym), nil
+	return RSymbol(sym), nil
 }
 
 func parseHash(value interface{}) (types.Hash, error) {
@@ -167,7 +166,7 @@ func parseU32(value interface{}) (types.U32, error) {
 	return ret, nil
 }
 
-func ParseLiquidityBondAndSwapEvent(evt *submodel.ChainEvent) (*EvtExecuteBondAndSwap, error) {
+func ParseLiquidityBondAndSwapEvent(evt *ChainEvent) (*EvtExecuteBondAndSwap, error) {
 	if len(evt.Params) != 6 {
 		return nil, fmt.Errorf("LiquidityBondEventData params number not right: %d, expected: 6", len(evt.Params))
 	}
@@ -206,7 +205,7 @@ func ParseLiquidityBondAndSwapEvent(evt *submodel.ChainEvent) (*EvtExecuteBondAn
 	}, nil
 }
 
-func EventRateSetData(evt *submodel.ChainEvent) (*RateSet, error) {
+func EventRateSetData(evt *ChainEvent) (*RateSet, error) {
 	switch len(evt.Params) {
 	case 1:
 		rate, err := parseU64(evt.Params[0].Value)
@@ -215,7 +214,7 @@ func EventRateSetData(evt *submodel.ChainEvent) (*RateSet, error) {
 		}
 
 		return &RateSet{
-			Symbol: submodel.RFIS,
+			Symbol: RFIS,
 			Rate:   rate,
 		}, nil
 	case 2:

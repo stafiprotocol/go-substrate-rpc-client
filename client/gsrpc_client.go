@@ -26,6 +26,21 @@ const (
 	storageKey = "0x26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7"
 )
 
+const (
+	ChainTypeStafi    = "stafi"
+	ChainTypePolkadot = "polkadot"
+
+	AddressTypeAccountId    = "AccountId"
+	AddressTypeMultiAddress = "MultiAddress"
+)
+
+var (
+	ErrorTerminated           = errors.New("terminated")
+	ErrorBondEqualToUnbond    = errors.New("ErrorBondEqualToUnbond")
+	ErrorDiffSmallerThanLeast = errors.New("ErrorDiffSmallerThanLeast")
+	ErrorValueNotExist        = errors.New("value not exist")
+)
+
 type GsrpcClient struct {
 	endpoint    string
 	addressType string
@@ -217,14 +232,15 @@ func (sc *GsrpcClient) regCustomTypes() {
 func (sc *GsrpcClient) initial() (*websocket_pool.PoolConn, error) {
 	var err error
 	if sc.wsPool == nil {
-		factory := func() (*recws.RecConn, error) {
+		factory := func() (*websocket_pool.PoolConn, error) {
 			SubscribeConn := &recws.RecConn{KeepAliveTimeout: 2 * time.Minute}
 			SubscribeConn.Dial(sc.endpoint, nil)
 			sc.log.Debug("conn factory create new conn", "endpoint", sc.endpoint)
-			return SubscribeConn, err
+			return websocket_pool.WrapConn(SubscribeConn), err
 		}
-		if sc.wsPool, err = websocket_pool.NewChannelPool(1, 25, factory); err != nil {
+		if sc.wsPool, err = websocket_pool.NewWsPool(1, 100, factory); err != nil {
 			sc.log.Error("wbskt.NewChannelPool", "err", err)
+			return nil, err
 		}
 	}
 	if err != nil {
