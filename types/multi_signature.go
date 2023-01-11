@@ -16,7 +16,7 @@
 
 package types
 
-import "github.com/stafiprotocol/go-substrate-rpc-client/scale"
+import "github.com/stafiprotocol/go-substrate-rpc-client/pkg/scale"
 
 // MultiSignature
 type MultiSignature struct {

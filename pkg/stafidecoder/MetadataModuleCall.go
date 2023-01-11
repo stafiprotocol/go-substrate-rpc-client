@@ -1,4 +1,4 @@
-package stafi
+package stafi_decoder
 
 type MetadataModuleCall struct {
 	ScaleDecoder

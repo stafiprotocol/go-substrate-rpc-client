@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	ghash "github.com/stafiprotocol/go-substrate-rpc-client/hash"
-	"github.com/stafiprotocol/go-substrate-rpc-client/scale"
+	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/scale"
 	"github.com/stafiprotocol/go-substrate-rpc-client/xxhash"
 )
 

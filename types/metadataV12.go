@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/stafiprotocol/go-substrate-rpc-client/scale"
+	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/scale"
 )
 
 // Modelled after packages/types/src/Metadata/v11/toV12.ts

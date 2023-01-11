@@ -2,6 +2,7 @@ package config
 
 const (
 	RTokenSeriesModuleId = "RTokenSeries"
+	StorageReceiver      = "Receiver"
 
 	LiquidityBondEventId      = "LiquidityBond"
 	ExecuteBondAndSwapEventId = "ExecuteBondAndSwap"

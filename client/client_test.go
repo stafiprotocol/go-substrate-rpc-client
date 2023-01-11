@@ -62,6 +62,12 @@ func TestSarpcClient_GetChainEvents(t *testing.T) {
 		}
 	}
 
+	receiver, err := sc.GetReceiver()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(hexutil.Encode(receiver[:]))
+
 }
 
 func TestSarpcClient_GetChainEventNominationUpdated(t *testing.T) {

@@ -22,7 +22,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stafiprotocol/go-substrate-rpc-client/scale"
+	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/scale"
 	. "github.com/stafiprotocol/go-substrate-rpc-client/types"
 	"github.com/stretchr/testify/assert"
 )

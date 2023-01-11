@@ -15,10 +15,10 @@ import (
 	"github.com/itering/scale.go/utiles"
 	"github.com/itering/substrate-api-rpc/rpc"
 	"github.com/stafiprotocol/go-substrate-rpc-client/config"
+	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/stafidecoder"
 	gsrpc "github.com/stafiprotocol/go-substrate-rpc-client/rpc"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
 	commonTypes "github.com/stafiprotocol/go-substrate-rpc-client/types/common"
-	"github.com/stafiprotocol/go-substrate-rpc-client/types/stafi"
 )
 
 func (sc *GsrpcClient) FlashApi() (*gsrpc.RPCS, error) {
@@ -514,10 +514,10 @@ func (sc *GsrpcClient) GetExtrinsics(blockHash string) ([]*Transaction, error) {
 		if err != nil {
 			return nil, err
 		}
-		e := new(stafi.ExtrinsicDecoder)
-		option := stafi.ScaleDecoderOption{Metadata: &md.Metadata}
+		e := new(stafi_decoder.ExtrinsicDecoder)
+		option := stafi_decoder.ScaleDecoderOption{Metadata: &md.Metadata}
 		for _, raw := range blk.Extrinsics {
-			e.Init(stafi.ScaleBytes{Data: utiles.HexToBytes(raw)}, &option)
+			e.Init(stafi_decoder.ScaleBytes{Data: utiles.HexToBytes(raw)}, &option)
 			e.Process()
 			if e.ExtrinsicHash != "" && e.ContainsTransaction {
 				ext := &Transaction{
@@ -605,9 +605,9 @@ func (sc *GsrpcClient) GetChainEvents(blockHash string) ([]*ChainEvent, error) {
 		if err != nil {
 			return nil, err
 		}
-		e := stafi.EventsDecoder{}
-		option := stafi.ScaleDecoderOption{Metadata: &md.Metadata}
-		e.Init(stafi.ScaleBytes{Data: utiles.HexToBytes(eventRaw)}, &option)
+		e := stafi_decoder.EventsDecoder{}
+		option := stafi_decoder.ScaleDecoderOption{Metadata: &md.Metadata}
+		e.Init(stafi_decoder.ScaleBytes{Data: utiles.HexToBytes(eventRaw)}, &option)
 		e.Process()
 		b, err := json.Marshal(e.Value)
 		if err != nil {
@@ -677,16 +677,16 @@ func (sc *GsrpcClient) GetBlockTimestampAndExtrinsics(height uint64) (uint64, ma
 	exts := make(map[int]*Transaction)
 	switch sc.chainType {
 	case ChainTypeStafi:
-		e := new(stafi.ExtrinsicDecoder)
+		e := new(stafi_decoder.ExtrinsicDecoder)
 		md, err := sc.getStafiMetaDecoder(blockHash)
 		if err != nil {
 			return 0, nil, err
 		}
 
-		option := stafi.ScaleDecoderOption{Metadata: &md.Metadata, Spec: md.Spec}
+		option := stafi_decoder.ScaleDecoderOption{Metadata: &md.Metadata, Spec: md.Spec}
 
 		raw := blk.Extrinsics[0]
-		e.Init(stafi.ScaleBytes{Data: utiles.HexToBytes(raw)}, &option)
+		e.Init(stafi_decoder.ScaleBytes{Data: utiles.HexToBytes(raw)}, &option)
 		e.Process()
 		if len(e.Params) == 0 {
 			return 0, nil, fmt.Errorf("no params")
@@ -697,7 +697,7 @@ func (sc *GsrpcClient) GetBlockTimestampAndExtrinsics(height uint64) (uint64, ma
 		}
 
 		for index, raw := range blk.Extrinsics {
-			e.Init(stafi.ScaleBytes{Data: utiles.HexToBytes(raw)}, &option)
+			e.Init(stafi_decoder.ScaleBytes{Data: utiles.HexToBytes(raw)}, &option)
 			e.Process()
 			if e.ExtrinsicHash != "" && e.ContainsTransaction {
 				ext := &Transaction{

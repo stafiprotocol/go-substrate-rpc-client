@@ -19,7 +19,7 @@ package types
 import (
 	"fmt"
 
-	"github.com/stafiprotocol/go-substrate-rpc-client/scale"
+	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/scale"
 )
 
 // OptionBool is a structure that can store a Bool or a missing value

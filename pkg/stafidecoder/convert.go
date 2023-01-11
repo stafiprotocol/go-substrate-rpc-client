@@ -1,4 +1,4 @@
-package stafi
+package stafi_decoder
 
 import "strings"
 

@@ -24,7 +24,7 @@ import (
 	"reflect"
 
 	"github.com/ethereum/go-ethereum/log"
-	"github.com/stafiprotocol/go-substrate-rpc-client/scale"
+	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/scale"
 )
 
 // EventRecordsRaw is a raw record for a set of events, represented as the raw bytes. It exists since

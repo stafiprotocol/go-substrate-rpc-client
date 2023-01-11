@@ -3,7 +3,7 @@ package types
 import (
 	"fmt"
 
-	"github.com/stafiprotocol/go-substrate-rpc-client/scale"
+	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/scale"
 )
 
 type MultiAddress struct {

@@ -1,4 +1,4 @@
-package stafi
+package stafi_decoder
 
 import (
 	"errors"
@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/itering/scale.go/source"
 	"github.com/itering/scale.go/utiles"
 )
 
@@ -142,7 +141,7 @@ func (r RuntimeType) Reg() *RuntimeType {
 	registry["[u128; 3]"] = &FixedLengthArray{FixedLength: 3, SubType: "u128"}
 	TypeRegistry = registry
 
-	RegCustomTypes(source.LoadTypeRegistry([]byte(source.BaseType)))
+	RegCustomTypes(LoadTypeRegistry([]byte(BaseType)))
 	return &r
 }
 

@@ -135,3 +135,9 @@ func (sc *GsrpcClient) GetEraRate(symbol RSymbol, era uint32) (rate uint64, err 
 	_, err = sc.QueryStorage(config.RTokenRateModuleId, config.StorageEraRate, symBz, eraIndex, &rate)
 	return
 }
+
+func (sc *GsrpcClient) GetReceiver() (*types.AccountID, error) {
+	ac := new(types.AccountID)
+	_, err := sc.QueryStorage(config.RTokenLedgerModuleId, config.StorageReceiver, nil, nil, ac)
+	return ac, err
+}

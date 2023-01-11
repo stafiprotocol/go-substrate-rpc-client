@@ -1,4 +1,4 @@
-package stafi
+package stafi_decoder
 
 import (
 	"encoding/json"
@@ -7,57 +7,56 @@ import (
 	"github.com/itering/scale.go/utiles"
 )
 
-type MetadataV12Decoder struct {
+type MetadataV8Decoder struct {
 	ScaleDecoder
 }
 
-type ExtrinsicMetadata struct {
-	SignedExtensions []string `json:"signedExtensions"`
-}
-
-func (m *MetadataV12Decoder) Init(data ScaleBytes, option *ScaleDecoderOption) {
+func (m *MetadataV8Decoder) Init(data ScaleBytes, option *ScaleDecoderOption) {
 	m.ScaleDecoder.Init(data, option)
 }
 
-func (m *MetadataV12Decoder) Process() {
-	// var callModuleIndex, eventModuleIndex int
-
+func (m *MetadataV8Decoder) Process() {
 	result := MetadataStruct{
 		Metadata: MetadataTag{
 			Modules: nil,
 		},
 	}
-	MetadataV11ModuleCall := m.ProcessAndUpdateData("Vec<MetadataV12Module>").([]interface{})
-	bm, _ := json.Marshal(MetadataV11ModuleCall)
-
-	var modulesType []MetadataModules
-	_ = json.Unmarshal(bm, &modulesType)
+	metadataV8ModuleCall := m.ProcessAndUpdateData("Vec<MetadataV8Module>").([]interface{})
+	callModuleIndex := 0
+	eventModuleIndex := 0
 	result.CallIndex = make(map[string]CallIndex)
 	result.EventIndex = make(map[string]EventIndex)
+	bm, _ := json.Marshal(metadataV8ModuleCall)
+	var modulesType []MetadataModules
+	_ = json.Unmarshal(bm, &modulesType)
 	for k, module := range modulesType {
 		if module.Calls != nil {
 			for callIndex, call := range module.Calls {
-				modulesType[k].Calls[callIndex].Lookup = xstrings.RightJustify(utiles.IntToHex(module.Index), 2, "0") + xstrings.RightJustify(utiles.IntToHex(callIndex), 2, "0")
-				result.CallIndex[modulesType[k].Calls[callIndex].Lookup] = CallIndex{Module: module, Call: call}
+				modulesType[k].Calls[callIndex].Lookup = xstrings.RightJustify(utiles.IntToHex(callModuleIndex), 2, "0") + xstrings.RightJustify(utiles.IntToHex(callIndex), 2, "0")
+				result.CallIndex[modulesType[k].Calls[callIndex].Lookup] = CallIndex{
+					Module: module,
+					Call:   call,
+				}
 			}
+			callModuleIndex++
 		}
 		if module.Events != nil {
 			for eventIndex, event := range module.Events {
-				modulesType[k].Events[eventIndex].Lookup = xstrings.RightJustify(utiles.IntToHex(module.Index), 2, "0") + xstrings.RightJustify(utiles.IntToHex(eventIndex), 2, "0")
-				result.EventIndex[modulesType[k].Events[eventIndex].Lookup] = EventIndex{Module: module, Call: event}
+				modulesType[k].Events[eventIndex].Lookup = xstrings.RightJustify(utiles.IntToHex(eventModuleIndex), 2, "0") + xstrings.RightJustify(utiles.IntToHex(eventIndex), 2, "0")
+				result.EventIndex[modulesType[k].Events[eventIndex].Lookup] = EventIndex{
+					Module: module,
+					Call:   event,
+				}
 			}
+			eventModuleIndex++
 		}
 	}
 
 	result.Metadata.Modules = modulesType
-	extrinsicMetadata := m.ProcessAndUpdateData("ExtrinsicMetadata").(map[string]interface{})
-	bm, _ = json.Marshal(extrinsicMetadata)
-	_ = json.Unmarshal(bm, &result.Extrinsic)
-
 	m.Value = result
 }
 
-type MetadataV12Module struct {
+type MetadataV8Module struct {
 	ScaleDecoder
 	Name       string                   `json:"name"`
 	Prefix     string                   `json:"prefix"`
@@ -70,15 +69,14 @@ type MetadataV12Module struct {
 	Events     []MetadataEvents         `json:"events"`
 	Constants  []map[string]interface{} `json:"constants"`
 	Errors     []MetadataModuleError    `json:"errors"`
-	Index      int                      `json:"index"`
 }
 
-func (m *MetadataV12Module) GetIdentifier() string {
+func (m *MetadataV8Module) GetIdentifier() string {
 	return m.Name
 }
 
-func (m *MetadataV12Module) Process() {
-	cm := MetadataV12Module{}
+func (m *MetadataV8Module) Process() {
+	cm := MetadataV8Module{}
 	cm.Name = m.ProcessAndUpdateData("String").(string)
 
 	// storage
@@ -93,7 +91,7 @@ func (m *MetadataV12Module) Process() {
 	cm.HasCalls = m.ProcessAndUpdateData("bool").(bool)
 	if cm.HasCalls {
 		callValue := m.ProcessAndUpdateData("Vec<MetadataModuleCall>").([]interface{})
-		var calls []MetadataModuleCall
+		calls := []MetadataModuleCall{}
 		for _, v := range callValue {
 			calls = append(calls, v.(MetadataModuleCall))
 		}
@@ -104,7 +102,7 @@ func (m *MetadataV12Module) Process() {
 	cm.HasEvents = m.ProcessAndUpdateData("bool").(bool)
 	if cm.HasEvents {
 		eventValue := m.ProcessAndUpdateData("Vec<MetadataModuleEvent>").([]interface{})
-		var events []MetadataEvents
+		events := []MetadataEvents{}
 		for _, v := range eventValue {
 			events = append(events, v.(MetadataEvents))
 		}
@@ -125,6 +123,29 @@ func (m *MetadataV12Module) Process() {
 		errors = append(errors, v.(MetadataModuleError))
 	}
 	cm.Errors = errors
-	cm.Index = m.ProcessAndUpdateData("U8").(int)
+	m.Value = cm
+}
+
+type MetadataModuleError struct {
+	ScaleDecoder `json:"-"`
+	Name         string   `json:"name"`
+	Doc          []string `json:"doc"`
+}
+
+func (m *MetadataModuleError) Init(data ScaleBytes, option *ScaleDecoderOption) {
+	m.Name = ""
+	m.Doc = []string{}
+	m.ScaleDecoder.Init(data, option)
+}
+
+func (m *MetadataModuleError) Process() {
+	cm := MetadataModuleError{}
+	cm.Name = m.ProcessAndUpdateData("String").(string)
+	var docsArr []string
+	docs := m.ProcessAndUpdateData("Vec<String>").([]interface{})
+	for _, v := range docs {
+		docsArr = append(docsArr, v.(string))
+	}
+	cm.Doc = docsArr
 	m.Value = cm
 }

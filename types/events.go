@@ -19,7 +19,7 @@ package types
 import (
 	"fmt"
 
-	"github.com/stafiprotocol/go-substrate-rpc-client/scale"
+	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/scale"
 )
 
 // EventBalancesEndowed is emitted when an account is created with some free balance

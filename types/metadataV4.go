@@ -22,7 +22,7 @@ import (
 	"hash"
 	"strings"
 
-	"github.com/stafiprotocol/go-substrate-rpc-client/scale"
+	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/scale"
 	"github.com/stafiprotocol/go-substrate-rpc-client/xxhash"
 	"golang.org/x/crypto/blake2b"
 )

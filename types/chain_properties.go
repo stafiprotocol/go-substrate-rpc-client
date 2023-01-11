@@ -17,7 +17,7 @@
 package types
 
 import (
-	"github.com/stafiprotocol/go-substrate-rpc-client/scale"
+	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/scale"
 )
 
 // ChainProperties contains the SS58 format, the token decimals and the token symbol

@@ -14,11 +14,11 @@ import (
 	"github.com/itering/substrate-api-rpc/rpc"
 	gsrpcConfig "github.com/stafiprotocol/go-substrate-rpc-client/config"
 	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/recws"
-	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/websocket_pool"
+	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/stafidecoder"
+	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/websocketpool"
 	gsrpc "github.com/stafiprotocol/go-substrate-rpc-client/rpc"
 	"github.com/stafiprotocol/go-substrate-rpc-client/signature"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
-	"github.com/stafiprotocol/go-substrate-rpc-client/types/stafi"
 )
 
 const (
@@ -56,7 +56,7 @@ type GsrpcClient struct {
 
 	currentSpecVersion int
 
-	stafiMetaDecoderMap map[int]*stafi.MetadataDecoder
+	stafiMetaDecoderMap map[int]*stafi_decoder.MetadataDecoder
 	polkaMetaDecoderMap map[int]*scale.MetadataDecoder
 	sync.RWMutex
 
@@ -99,7 +99,7 @@ func NewGsrpcClient(chainType, endpoint, typesPath, addressType string, key *sig
 		log:                 log,
 		typesPath:           typesPath,
 		currentSpecVersion:  -1,
-		stafiMetaDecoderMap: make(map[int]*stafi.MetadataDecoder),
+		stafiMetaDecoderMap: make(map[int]*stafi_decoder.MetadataDecoder),
 		polkaMetaDecoderMap: make(map[int]*scale.MetadataDecoder),
 	}
 
@@ -123,7 +123,7 @@ func NewGsrpcClient(chainType, endpoint, typesPath, addressType string, key *sig
 	return sc, nil
 }
 
-func (s *GsrpcClient) getStafiMetaDecoder(blockHash string) (*stafi.MetadataDecoder, error) {
+func (s *GsrpcClient) getStafiMetaDecoder(blockHash string) (*stafi_decoder.MetadataDecoder, error) {
 	v := &rpc.JsonRpcResult{}
 	// runtime version
 	if err := s.sendWsRequest(v, rpc.ChainGetRuntimeVersion(wsId, blockHash)); err != nil {
@@ -150,7 +150,7 @@ func (s *GsrpcClient) getStafiMetaDecoder(blockHash string) (*stafi.MetadataDeco
 		return nil, err
 	}
 
-	md := &stafi.MetadataDecoder{}
+	md := &stafi_decoder.MetadataDecoder{}
 	md.Init(utiles.HexToBytes(metaRaw))
 	if err := md.Process(); err != nil {
 		return nil, err
@@ -220,8 +220,8 @@ func (sc *GsrpcClient) regCustomTypes() {
 
 	switch sc.chainType {
 	case ChainTypeStafi:
-		stafi.RuntimeType{}.Reg()
-		stafi.RegCustomTypes(source.LoadTypeRegistry(content))
+		stafi_decoder.RuntimeType{}.Reg()
+		stafi_decoder.RegCustomTypes(stafi_decoder.LoadTypeRegistry(content))
 	case ChainTypePolkadot:
 		scaleTypes.RegCustomTypes(source.LoadTypeRegistry(content))
 	default:

@@ -1,10 +1,9 @@
-package stafi
+package stafi_decoder
 
 import (
 	"regexp"
 	"strings"
 
-	"github.com/itering/scale.go/source"
 	"github.com/itering/scale.go/utiles"
 )
 
@@ -18,7 +17,7 @@ func newStruct(names, typeString []string) *TypeMapping {
 	return &TypeMapping{Names: names, Types: typeString}
 }
 
-func RegCustomTypes(registry map[string]source.TypeStruct) {
+func RegCustomTypes(registry map[string]TypeStruct) {
 	for key, typeStruct := range registry {
 		key = strings.ToLower(key)
 		switch typeStruct.Type {
@@ -39,7 +38,7 @@ func RegCustomTypes(registry map[string]source.TypeStruct) {
 						continue
 					}
 				} else {
-					RegCustomTypes(map[string]source.TypeStruct{key: registry[typeString]})
+					RegCustomTypes(map[string]TypeStruct{key: registry[typeString]})
 				}
 			}
 

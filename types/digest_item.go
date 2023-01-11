@@ -16,7 +16,7 @@
 
 package types
 
-import "github.com/stafiprotocol/go-substrate-rpc-client/scale"
+import "github.com/stafiprotocol/go-substrate-rpc-client/pkg/scale"
 
 // DigestItem specifies the item in the logs of a digest
 type DigestItem struct {
