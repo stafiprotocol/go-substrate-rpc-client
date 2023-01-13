@@ -58,8 +58,6 @@ func (sc *GsrpcClient) SignAndSubmitTx(ext interface{}) error {
 func (sc *GsrpcClient) watchSubmission(sub *author.ExtrinsicStatusSubscription) error {
 	for {
 		select {
-		case <-sc.stop:
-			return ErrorTerminated
 		case status := <-sub.Chan():
 			switch {
 			case status.IsInBlock:

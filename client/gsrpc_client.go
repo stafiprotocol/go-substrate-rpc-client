@@ -47,7 +47,6 @@ type GsrpcClient struct {
 	rpcs        *gsrpc.RPCS
 	key         *signature.KeyringPair
 	genesisHash types.Hash
-	stop        <-chan int
 
 	wsPool    websocket_pool.Pool
 	log       Logger
@@ -63,8 +62,8 @@ type GsrpcClient struct {
 	metaDataVersion int
 }
 
-func NewGsrpcClient(chainType, endpoint, typesPath, addressType string, key *signature.KeyringPair, log Logger, stop <-chan int) (*GsrpcClient, error) {
-	log.Info("Connecting to substrate chain with sarpc", "endpoint", endpoint)
+func NewGsrpcClient(chainType, endpoint, typesPath, addressType string, key *signature.KeyringPair, log Logger) (*GsrpcClient, error) {
+	log.Info("Connecting to substrate chain with gsrpc client", "endpoint", endpoint)
 
 	if addressType != AddressTypeAccountId && addressType != AddressTypeMultiAddress {
 		return nil, errors.New("addressType not supported")
@@ -94,7 +93,6 @@ func NewGsrpcClient(chainType, endpoint, typesPath, addressType string, key *sig
 		rpcs:                rpcs,
 		key:                 key,
 		genesisHash:         genesisHash,
-		stop:                stop,
 		wsPool:              nil,
 		log:                 log,
 		typesPath:           typesPath,
@@ -103,7 +101,10 @@ func NewGsrpcClient(chainType, endpoint, typesPath, addressType string, key *sig
 		polkaMetaDecoderMap: make(map[int]*scale.MetadataDecoder),
 	}
 
-	sc.regCustomTypes()
+	err = sc.regCustomTypes()
+	if err != nil {
+		return nil, err
+	}
 
 	switch chainType {
 	case ChainTypeStafi:
@@ -212,10 +213,14 @@ func (s *GsrpcClient) getPolkaMetaDecoder(blockHash string) (*scale.MetadataDeco
 
 }
 
-func (sc *GsrpcClient) regCustomTypes() {
-	content, err := os.ReadFile(sc.typesPath)
-	if err != nil {
-		panic(err)
+func (sc *GsrpcClient) regCustomTypes() error {
+	content := []byte(stafi_decoder.DefaultStafiCustumTypes)
+	var err error
+	if len(sc.typesPath) != 0 {
+		content, err = os.ReadFile(sc.typesPath)
+		if err != nil {
+			return err
+		}
 	}
 
 	switch sc.chainType {
@@ -225,8 +230,9 @@ func (sc *GsrpcClient) regCustomTypes() {
 	case ChainTypePolkadot:
 		scaleTypes.RegCustomTypes(source.LoadTypeRegistry(content))
 	default:
-		panic("chainType not supported")
+		return fmt.Errorf("chainType not supported")
 	}
+	return nil
 }
 
 func (sc *GsrpcClient) initial() (*websocket_pool.PoolConn, error) {

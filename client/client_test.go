@@ -43,10 +43,10 @@ func TestSarpcClient_GetChainEvents(t *testing.T) {
 	//sc, err := client.NewGsrpcClient("wss://mainnet-rpc.stafi.io", stafiTypesFile, tlog)
 	//sc, err := client.NewGsrpcClient("wss://polkadot-test-rpc.stafi.io", polkaTypesFile, tlog)
 	//sc, err := client.NewGsrpcClient(ChainTypeStafi, "ws://127.0.0.1:9944", stafiTypesFile, tlog)
-	stop := make(chan int)
-	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "wss://stafi-seiya.stafi.io", stafiTypesFile, client.AddressTypeAccountId, AliceKey, tlog, stop)
-	// sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-rpc.polkadot.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog, stop)
-	// sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-rpc.stafi.io", kusamaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog, stop)
+
+	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "wss://stafi-seiya.stafi.io", "", client.AddressTypeAccountId, AliceKey, tlog)
+	// sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-rpc.polkadot.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog,  )
+	// sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-rpc.stafi.io", kusamaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog,  )
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,10 +71,10 @@ func TestSarpcClient_GetChainEvents(t *testing.T) {
 }
 
 func TestSarpcClient_GetChainEventNominationUpdated(t *testing.T) {
-	stop := make(chan int)
-	// sc, err := client.NewGsrpcClient(ChainTypeStafi, "wss://stafi-seiya.stafi.io", stafiTypesFile, AddressTypeAccountId, AliceKey, tlog, stop)
-	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "wss://mainnet-rpc.stafi.io", stafiTypesFile, client.AddressTypeAccountId, AliceKey, tlog, stop)
-	// sc, err := client.NewGsrpcClient(client.ChainTypePolkadot,"wss://polkadot-test-rpc.stafi.io", polkaTypesFile, AddressTypeAccountId, AliceKey, tlog, stop)
+
+	// sc, err := client.NewGsrpcClient(ChainTypeStafi, "wss://stafi-seiya.stafi.io", stafiTypesFile, AddressTypeAccountId, AliceKey, tlog,  )
+	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "wss://mainnet-rpc.stafi.io", stafiTypesFile, client.AddressTypeAccountId, AliceKey, tlog)
+	// sc, err := client.NewGsrpcClient(client.ChainTypePolkadot,"wss://polkadot-test-rpc.stafi.io", polkaTypesFile, AddressTypeAccountId, AliceKey, tlog,  )
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,8 +108,8 @@ func TestSarpcClient_GetChainEventNominationUpdated(t *testing.T) {
 func TestSarpcClient_GetExtrinsics1(t *testing.T) {
 	//sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://polkadot-test-rpc.stafi.io", polkaTypesFile, tlog)
 	//sc, err := client.NewGsrpcClient("wss://stafi-seiya.stafi.io", stafiTypesFile, tlog)
-	stop := make(chan int)
-	sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://rpc.polkadot.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog, stop)
+
+	sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://rpc.polkadot.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -157,8 +157,8 @@ func TestSarpcClient_GetExtrinsics1(t *testing.T) {
 }
 
 func TestSarpcClient_GetExtrinsics2(t *testing.T) {
-	stop := make(chan int)
-	sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-rpc.polkadot.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog, stop)
+
+	sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-rpc.polkadot.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -196,8 +196,8 @@ func TestSarpcClient_GetExtrinsics2(t *testing.T) {
 }
 
 func TestBatchTransfer(t *testing.T) {
-	stop := make(chan int)
-	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "ws://127.0.0.1:9944", stafiTypesFile, client.AddressTypeAccountId, AliceKey, tlog, stop)
+
+	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "ws://127.0.0.1:9944", stafiTypesFile, client.AddressTypeAccountId, AliceKey, tlog)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -243,8 +243,8 @@ func TestBatchTransfer(t *testing.T) {
 }
 
 func TestGetConst(t *testing.T) {
-	stop := make(chan int)
-	sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-rpc.polkadot.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog, stop)
+
+	sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-rpc.polkadot.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -257,8 +257,8 @@ func TestGetConst(t *testing.T) {
 }
 
 func TestPolkaQueryStorage(t *testing.T) {
-	stop := make(chan int)
-	sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-rpc.polkadot.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog, stop)
+
+	sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-rpc.polkadot.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -277,8 +277,8 @@ func TestPolkaQueryStorage(t *testing.T) {
 }
 
 func TestStafiLocalQueryActiveEra(t *testing.T) {
-	stop := make(chan int)
-	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "ws://127.0.0.1:9944", stafiTypesFile, client.AddressTypeAccountId, AliceKey, tlog, stop)
+
+	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "ws://127.0.0.1:9944", stafiTypesFile, client.AddressTypeAccountId, AliceKey, tlog)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -293,9 +293,9 @@ func TestStafiLocalQueryActiveEra(t *testing.T) {
 }
 
 func TestActive(t *testing.T) {
-	stop := make(chan int)
-	//sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-test-rpc.stafi.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog, stop)
-	sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-test-rpc.stafi.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog, stop)
+
+	//sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-test-rpc.stafi.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog,  )
+	sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-test-rpc.stafi.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -317,8 +317,8 @@ func TestActive(t *testing.T) {
 }
 
 func TestActive1(t *testing.T) {
-	stop := make(chan int)
-	sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://polkadot-test-rpc.stafi.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog, stop)
+
+	sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://polkadot-test-rpc.stafi.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -350,8 +350,8 @@ func TestPool(t *testing.T) {
 	fmt.Println(pool)
 	fmt.Println(pbz)
 
-	//stop := make(chan int)
-	//gc, err := client.NewGsrpcClient("wss://stafi-seiya.stafi.io", AddressTypeAccountId, AliceKey, tlog, stop)
+	//
+	//gc, err := client.NewGsrpcClient("wss://stafi-seiya.stafi.io", AddressTypeAccountId, AliceKey, tlog,  )
 	//assert.NoError(t, err)
 	//
 	//
@@ -380,8 +380,8 @@ func Test_KSM_GsrpcClient_Multisig(t *testing.T) {
 	}
 
 	krp := kp.(*sr25519.Keypair).AsKeyringPair()
-	stop := make(chan int)
-	sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-test-rpc.stafi.io", kusamaTypesFile, client.AddressTypeMultiAddress, krp, tlog, stop)
+
+	sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-test-rpc.stafi.io", kusamaTypesFile, client.AddressTypeMultiAddress, krp, tlog)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -449,9 +449,9 @@ func Test_KSM_GsrpcClient_transfer(t *testing.T) {
 	}
 
 	krp := kp.(*sr25519.Keypair).AsKeyringPair()
-	stop := make(chan int)
-	// sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-test-rpc.stafi.io", kusamaTypesFile, AddressTypeAccountId, krp, tlog, stop)
-	sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "ws://127.0.0.1:9944", kusamaTypesFile, client.AddressTypeMultiAddress, krp, tlog, stop)
+
+	// sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-test-rpc.stafi.io", kusamaTypesFile, AddressTypeAccountId, krp, tlog,  )
+	sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "ws://127.0.0.1:9944", kusamaTypesFile, client.AddressTypeMultiAddress, krp, tlog)
 	if err != nil {
 		t.Fatal(err)
 	}
