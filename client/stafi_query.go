@@ -2,6 +2,7 @@ package client
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/stafiprotocol/go-substrate-rpc-client/config"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
@@ -132,12 +133,108 @@ func (sc *GsrpcClient) GetEraRate(symbol RSymbol, era uint32) (rate uint64, err 
 	if err != nil {
 		return 0, err
 	}
-	_, err = sc.QueryStorage(config.RTokenRateModuleId, config.StorageEraRate, symBz, eraIndex, &rate)
-	return
+	exists, err := sc.QueryStorage(config.RTokenRateModuleId, config.StorageEraRate, symBz, eraIndex, &rate)
+	if err != nil {
+		return 0, err
+	}
+	if !exists {
+		return 0, ErrorValueNotExist
+	}
+	return rate, nil
 }
 
 func (sc *GsrpcClient) GetReceiver() (*types.AccountID, error) {
 	ac := new(types.AccountID)
-	_, err := sc.QueryStorage(config.RTokenLedgerModuleId, config.StorageReceiver, nil, nil, ac)
-	return ac, err
+	exists, err := sc.QueryStorage(config.RTokenLedgerModuleId, config.StorageReceiver, nil, nil, ac)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, ErrorValueNotExist
+	}
+	return ac, nil
+}
+
+func (gc *GsrpcClient) getREthCurrentCycle() (uint32, error) {
+	var cycle uint32
+	exists, err := gc.QueryStorage(config.RClaimModuleId, config.StorageREthActCurrentCycle, nil, nil, &cycle)
+	if err != nil {
+		return 0, err
+	}
+	if !exists {
+		return 0, ErrorValueNotExist
+	}
+
+	return cycle, nil
+}
+
+// when req reth info
+// update timestamp in database every time.
+// need send tx to stafi when:
+// 1 current cycle begin < now block < current cycle end
+// or
+// 2  current+x cycle begin < now < current+x cycle end
+func (gc *GsrpcClient) CurrentRethNeedSeed() (bool, error) {
+
+	currentCycleExist := false
+	currentCycle, err := gc.getREthCurrentCycle()
+	if err != nil {
+		if err != ErrorValueNotExist {
+			return false, err
+		}
+	} else {
+		currentCycleExist = true
+	}
+
+	blockNumber, err := gc.GetLatestBlockNumber()
+	if err != nil {
+		return false, err
+	}
+	latestCycle, err := gc.REthActLatestCycle()
+	if err != nil {
+		if err == ErrorValueNotExist {
+			return false, nil
+		}
+		return false, err
+	}
+
+	if latestCycle == 0 {
+		return false, nil
+	}
+
+	if currentCycleExist && currentCycle > 0 {
+		currentAct, err := gc.RethAct(currentCycle)
+		if err != nil {
+			return false, err
+		}
+		//case 1
+		if uint64(currentAct.Begin) <= blockNumber && blockNumber <= uint64(currentAct.End) {
+			return true, nil
+		}
+	}
+
+	beginCycle := 1
+	if currentCycleExist {
+		beginCycle = int(currentCycle) + 1
+	}
+
+	for i := beginCycle; i <= int(latestCycle); i++ {
+		act, err := gc.RethAct(uint32(i))
+		if err != nil {
+			if err == ErrorValueNotExist {
+
+				return false, fmt.Errorf("cycle: %d err: %s", i, err)
+			}
+			return false, err
+		}
+
+		if act.Begin > types.U32(blockNumber) {
+			break
+		}
+		//case 2
+		if uint64(act.Begin) <= blockNumber && blockNumber <= uint64(act.End) {
+			return true, nil
+		}
+	}
+	return false, nil
 }

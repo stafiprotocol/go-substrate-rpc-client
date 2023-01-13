@@ -11,10 +11,11 @@ const (
 
 	RClaimModuleId = "RClaim"
 
-	StorageActLatestCycle     = "ActLatestCycle"
-	StorageREthActLatestCycle = "REthActLatestCycle"
-	StorageActs               = "Acts"
-	StorageREthActs           = "REthActs"
+	StorageActLatestCycle      = "ActLatestCycle"
+	StorageREthActLatestCycle  = "REthActLatestCycle"
+	StorageActs                = "Acts"
+	StorageREthActs            = "REthActs"
+	StorageREthActCurrentCycle = "REthActCurrentCycle"
 
 	StorageBondRecords       = "BondRecords"
 	StorageBondStates        = "BondStates"
@@ -41,6 +42,7 @@ const (
 	StoragePendingReward                      = "PendingReward"
 	MethodSetChainEra                         = "RTokenLedger.set_chain_era"
 	MethodBondReport                          = "RTokenLedger.bond_report"
+	MethodUpdateRethClaimInfo                 = "RClaim.update_reth_claim_info"
 	MethodNewBondReport                       = "RTokenLedger.new_bond_report"
 	MethodActiveReport                        = "RTokenLedger.active_report"
 	MethodNewActiveReport                     = "RTokenLedger.new_active_report"

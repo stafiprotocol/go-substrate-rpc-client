@@ -50,6 +50,13 @@ func TestSarpcClient_GetChainEvents(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	need, err := sc.CurrentRethNeedSeed()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(need)
+
 	evt, err := sc.GetEvents(1251694)
 	assert.NoError(t, err)
 	for _, e := range evt {
