@@ -16,6 +16,7 @@ const (
 	StorageActs                = "Acts"
 	StorageREthActs            = "REthActs"
 	StorageREthActCurrentCycle = "REthActCurrentCycle"
+	StorageMintTxHashExist     = "MintTxHashExist"
 
 	StorageBondRecords       = "BondRecords"
 	StorageBondStates        = "BondStates"

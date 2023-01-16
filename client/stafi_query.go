@@ -155,7 +155,7 @@ func (sc *GsrpcClient) GetReceiver() (*types.AccountID, error) {
 	return ac, nil
 }
 
-func (gc *GsrpcClient) getREthCurrentCycle() (uint32, error) {
+func (gc *GsrpcClient) GetREthCurrentCycle() (uint32, error) {
 	var cycle uint32
 	exists, err := gc.QueryStorage(config.RClaimModuleId, config.StorageREthActCurrentCycle, nil, nil, &cycle)
 	if err != nil {
@@ -168,6 +168,23 @@ func (gc *GsrpcClient) getREthCurrentCycle() (uint32, error) {
 	return cycle, nil
 }
 
+func (gc *GsrpcClient) MintTxHashExist(txHash types.Bytes) (bool, error) {
+	txHashBytes, err := types.EncodeToBytes(txHash)
+	if err != nil {
+		return false, err
+	}
+	var txExists bool
+	exists, err := gc.QueryStorage(config.RClaimModuleId, config.StorageMintTxHashExist, txHashBytes, nil, &txExists)
+	if err != nil {
+		return false, err
+	}
+	if !exists {
+		return exists, nil
+	}
+
+	return txExists, nil
+}
+
 // when req reth info
 // update timestamp in database every time.
 // need send tx to stafi when:
@@ -177,7 +194,7 @@ func (gc *GsrpcClient) getREthCurrentCycle() (uint32, error) {
 func (gc *GsrpcClient) CurrentRethNeedSeed() (bool, error) {
 
 	currentCycleExist := false
-	currentCycle, err := gc.getREthCurrentCycle()
+	currentCycle, err := gc.GetREthCurrentCycle()
 	if err != nil {
 		if err != ErrorValueNotExist {
 			return false, err

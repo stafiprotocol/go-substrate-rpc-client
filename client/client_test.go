@@ -42,15 +42,14 @@ const (
 func TestSarpcClient_GetChainEvents(t *testing.T) {
 	//sc, err := client.NewGsrpcClient("wss://mainnet-rpc.stafi.io", stafiTypesFile, tlog)
 	//sc, err := client.NewGsrpcClient("wss://polkadot-test-rpc.stafi.io", polkaTypesFile, tlog)
-	//sc, err := client.NewGsrpcClient(ChainTypeStafi, "ws://127.0.0.1:9944", stafiTypesFile, tlog)
+	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "ws://127.0.0.1:9944", stafiTypesFile, client.AddressTypeAccountId, AliceKey, tlog)
 
-	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "wss://stafi-seiya.stafi.io", "", client.AddressTypeAccountId, AliceKey, tlog)
+	// sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "wss://stafi-seiya.stafi.io", "", client.AddressTypeAccountId, AliceKey, tlog)
 	// sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-rpc.polkadot.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog,  )
 	// sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-rpc.stafi.io", kusamaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog,  )
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	need, err := sc.CurrentRethNeedSeed()
 	if err != nil {
 		t.Fatal(err)
@@ -519,4 +518,21 @@ func Test_KSM_GsrpcClient_transfer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+func TestSarpcClient_MintTxhashExist(t *testing.T) {
+	//sc, err := client.NewGsrpcClient("wss://mainnet-rpc.stafi.io", stafiTypesFile, tlog)
+	//sc, err := client.NewGsrpcClient("wss://polkadot-test-rpc.stafi.io", polkaTypesFile, tlog)
+	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "ws://127.0.0.1:9944", stafiTypesFile, client.AddressTypeAccountId, AliceKey, tlog)
+
+	// sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "wss://stafi-seiya.stafi.io", "", client.AddressTypeAccountId, AliceKey, tlog)
+	// sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-rpc.polkadot.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog,  )
+	// sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-rpc.stafi.io", kusamaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog,  )
+	if err != nil {
+		t.Fatal(err)
+	}
+	exist, err := sc.MintTxHashExist(types.NewBytes(hexutil.MustDecode("0x12345678")))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(exist)
 }
