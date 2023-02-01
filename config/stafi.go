@@ -70,6 +70,7 @@ const (
 	RTokenTransferEventId = "Transfer"
 	RTokenMintedEventId   = "Minted"
 	RTokenBurnedEventId   = "Burned"
+	StorageTotalIssuance  = "TotalIssuance"
 
 	RTokenRateModuleId   = "RTokenRate"
 	RTokenRateSetEventId = "RateSet"

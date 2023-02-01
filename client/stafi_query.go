@@ -27,6 +27,25 @@ func (c *GsrpcClient) CurrentChainEra(sym RSymbol) (uint32, error) {
 	return era, nil
 }
 
+func (c *GsrpcClient) RTokenTotalIssuance(sym RSymbol) (types.U128, error) {
+	symBz, err := types.EncodeToBytes(sym)
+	if err != nil {
+		return types.U128{}, err
+	}
+
+	var issuance types.U128
+	exists, err := c.QueryStorage(config.RTokenBalanceModuleId, config.StorageTotalIssuance, symBz, nil, &issuance)
+	if err != nil {
+		return types.U128{}, err
+	}
+
+	if !exists {
+		return types.U128{}, ErrorValueNotExist
+	}
+
+	return issuance, nil
+}
+
 func (c *GsrpcClient) CurrentEraSnapshots(symbol RSymbol) ([]types.Hash, error) {
 	symBz, err := types.EncodeToBytes(symbol)
 	if err != nil {

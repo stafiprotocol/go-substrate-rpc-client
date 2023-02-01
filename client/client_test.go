@@ -536,3 +536,19 @@ func TestSarpcClient_MintTxhashExist(t *testing.T) {
 	}
 	t.Log(exist)
 }
+
+func TestSarpcClient_RTokenTotalIssuance(t *testing.T) {
+
+	// sc, err := client.NewGsrpcClient(ChainTypeStafi, "wss://stafi-seiya.stafi.io", stafiTypesFile, AddressTypeAccountId, AliceKey, tlog,  )
+	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "wss://mainnet-rpc.stafi.io", stafiTypesFile, client.AddressTypeAccountId, AliceKey, tlog)
+	// sc, err := client.NewGsrpcClient(client.ChainTypePolkadot,"wss://polkadot-test-rpc.stafi.io", polkaTypesFile, AddressTypeAccountId, AliceKey, tlog,  )
+	if err != nil {
+		t.Fatal(err)
+
+	}
+	issuance, err := sc.RTokenTotalIssuance(client.RFIS)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(issuance)
+}
