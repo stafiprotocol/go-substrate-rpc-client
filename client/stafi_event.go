@@ -542,6 +542,32 @@ func EventTransferData(evt *ChainEvent) (*Transfer, error) {
 	}, nil
 }
 
+func EventWithdrawUnbondData(evt *ChainEvent) (*LiquidityWithdrawUnbond, error) {
+	if len(evt.Params) != 3 {
+		return nil, fmt.Errorf("EventWithdrawUnbondData params number not right: %d, expected: 4", len(evt.Params))
+	}
+	from, err := parseAccountId(evt.Params[0].Value)
+	if err != nil {
+		return nil, fmt.Errorf("EventWithdrawUnbondData params[0] -> from error: %s", err)
+	}
+
+	to, err := parseAccountId(evt.Params[1].Value)
+	if err != nil {
+		return nil, fmt.Errorf("EventWithdrawUnbondData params[1] -> to error: %s", err)
+	}
+
+	value, err := parseBigint(evt.Params[2].Value)
+	if err != nil {
+		return nil, fmt.Errorf("EventWithdrawUnbondData params[3] -> value error: %s", err)
+	}
+
+	return &LiquidityWithdrawUnbond{
+		From:  from,
+		To:    to,
+		Value: types.NewU128(*value),
+	}, nil
+}
+
 func EventMintedData(evt *ChainEvent) (*Minted, error) {
 	if len(evt.Params) != 3 {
 		return nil, fmt.Errorf("EventMintedData params number not right: %d, expected: 4", len(evt.Params))

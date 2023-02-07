@@ -21,6 +21,14 @@ type Transfer struct {
 	Value  types.U128
 }
 
+// /// liquidity withdraw unbond
+// LiquidityWithdrawUnBond(AccountId, AccountId, Balance),
+type LiquidityWithdrawUnbond struct {
+	From  types.AccountID
+	To    types.AccountID
+	Value types.U128
+}
+
 type Minted struct {
 	To     types.AccountID
 	Symbol RSymbol

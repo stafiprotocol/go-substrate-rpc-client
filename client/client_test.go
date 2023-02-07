@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/big"
 	"os"
-	"sync"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -40,37 +39,48 @@ const (
 )
 
 func TestSarpcClient_GetChainEvents(t *testing.T) {
-	//sc, err := client.NewGsrpcClient("wss://mainnet-rpc.stafi.io", stafiTypesFile, tlog)
+	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "wss://mainnet-rpc.stafi.io", "", client.AddressTypeAccountId, nil, tlog)
 	//sc, err := client.NewGsrpcClient("wss://polkadot-test-rpc.stafi.io", polkaTypesFile, tlog)
 	// sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "ws://127.0.0.1:9944", stafiTypesFile, client.AddressTypeAccountId, AliceKey, tlog)
 
-	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "wss://stafi-seiya.stafi.io", "", client.AddressTypeAccountId, AliceKey, tlog)
+	// sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "wss://stafi-seiya.stafi.io", "", client.AddressTypeAccountId, AliceKey, tlog)
 	// sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-rpc.polkadot.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog,  )
 	// sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-rpc.stafi.io", kusamaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog,  )
 	if err != nil {
 		t.Fatal(err)
 	}
-	need, err := sc.CurrentRethNeedSeed()
+
+	events, err := sc.GetEvents(12418861)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(need)
-	wg := sync.WaitGroup{}
-	for i := 1588890; i < 1588990; i++ {
-		wg.Add(1)
-		go func(height uint64) {
-			defer func() {
-				if err := recover(); err != nil {
-					panic(height)
-				}
-			}()
-			_, _ = sc.GetEvents(height)
-			fmt.Println(height)
-
-			wg.Done()
-		}(uint64(i))
+	for _, e := range events {
+		t.Log(e.EventId, e.ModuleId)
+		if e.EventId == config.RFisWithdrawUnbondEventId {
+			w, err := client.EventWithdrawUnbondData(e)
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Log(w)
+		}
 	}
-	wg.Wait()
+
+	// wg := sync.WaitGroup{}
+	// for i := 1588890; i < 1588990; i++ {
+	// 	wg.Add(1)
+	// 	go func(height uint64) {
+	// 		defer func() {
+	// 			if err := recover(); err != nil {
+	// 				panic(height)
+	// 			}
+	// 		}()
+	// 		_, _ = sc.GetEvents(height)
+	// 		fmt.Println(height)
+
+	// 		wg.Done()
+	// 	}(uint64(i))
+	// }
+	// wg.Wait()
 }
 
 func TestSarpcClient_GetChainEventNominationUpdated(t *testing.T) {
