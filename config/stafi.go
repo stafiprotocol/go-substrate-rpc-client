@@ -76,8 +76,9 @@ const (
 	RTokenRateSetEventId = "RateSet"
 	StorageEraRate       = "EraRate"
 
-	RFisModuleId      = "RFis"
-	RFisUnbondEventId = "LiquidityUnBond"
+	RFisModuleId              = "RFis"
+	RFisUnbondEventId         = "LiquidityUnBond"
+	RFisWithdrawUnbondEventId = "LiquidityWithdrawUnBond"
 
 	EraPayoutEventId = "EraPayout"
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -14,7 +15,6 @@ import (
 	"github.com/stafiprotocol/go-substrate-rpc-client/config"
 	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/utils"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
-	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -42,9 +42,9 @@ const (
 func TestSarpcClient_GetChainEvents(t *testing.T) {
 	//sc, err := client.NewGsrpcClient("wss://mainnet-rpc.stafi.io", stafiTypesFile, tlog)
 	//sc, err := client.NewGsrpcClient("wss://polkadot-test-rpc.stafi.io", polkaTypesFile, tlog)
-	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "ws://127.0.0.1:9944", stafiTypesFile, client.AddressTypeAccountId, AliceKey, tlog)
+	// sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "ws://127.0.0.1:9944", stafiTypesFile, client.AddressTypeAccountId, AliceKey, tlog)
 
-	// sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "wss://stafi-seiya.stafi.io", "", client.AddressTypeAccountId, AliceKey, tlog)
+	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "wss://stafi-seiya.stafi.io", "", client.AddressTypeAccountId, AliceKey, tlog)
 	// sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-rpc.polkadot.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog,  )
 	// sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://kusama-rpc.stafi.io", kusamaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog,  )
 	if err != nil {
@@ -55,25 +55,22 @@ func TestSarpcClient_GetChainEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log(need)
+	wg := sync.WaitGroup{}
+	for i := 1588890; i < 1588990; i++ {
+		wg.Add(1)
+		go func(height uint64) {
+			defer func() {
+				if err := recover(); err != nil {
+					panic(height)
+				}
+			}()
+			_, _ = sc.GetEvents(height)
+			fmt.Println(height)
 
-	evt, err := sc.GetEvents(1251694)
-	assert.NoError(t, err)
-	for _, e := range evt {
-		t.Log(e.EventId)
-		if e.EventId == config.ExecuteBondAndSwapEventId {
-			t.Log(e.Params)
-			swap, err := client.ParseLiquidityBondAndSwapEvent(e)
-			assert.NoError(t, err)
-			t.Logf("%+v", swap)
-		}
+			wg.Done()
+		}(uint64(i))
 	}
-
-	receiver, err := sc.GetReceiver()
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log(hexutil.Encode(receiver[:]))
-
+	wg.Wait()
 }
 
 func TestSarpcClient_GetChainEventNominationUpdated(t *testing.T) {
