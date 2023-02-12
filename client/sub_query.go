@@ -135,6 +135,7 @@ func (sc *GsrpcClient) QueryStorage(prefix, method string, arg1, arg2 []byte, re
 	if err != nil {
 		return false, err
 	}
+	sc.log.Trace("QueryStorage", "entry.IsNMap", entry.IsNMap(), "metaDataVersion", sc.metaDataVersion, "prefix", prefix, "method", method, "arg1", arg1, "arg2", arg2, "storageKey", hexutil.Encode(key))
 
 	ok, err := api.State.GetStorageLatest(key, result)
 	if err != nil {

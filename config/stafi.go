@@ -35,6 +35,7 @@ const (
 
 	RTokenRelayersModuleId                    = "Relayers"
 	StorageChainEras                          = "ChainEras"
+	StorageActiveChangeRateLimit              = "ActiveChangeRateLimit"
 	StorageCurrentEraSnapShots                = "CurrentEraSnapShots"
 	StorageRelayerThreshold                   = "RelayerThreshold"
 	StorageEraSnapShots                       = "EraSnapShots"

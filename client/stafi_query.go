@@ -27,6 +27,25 @@ func (c *GsrpcClient) CurrentChainEra(sym RSymbol) (uint32, error) {
 	return era, nil
 }
 
+func (c *GsrpcClient) ActiveChangeRateLimit(sym RSymbol) (uint32, error) {
+	symBz, err := types.EncodeToBytes(sym)
+	if err != nil {
+		return 0, err
+	}
+
+	var PerBill types.U32
+	exists, err := c.QueryStorage(config.RTokenLedgerModuleId, config.StorageActiveChangeRateLimit, symBz, nil, &PerBill)
+	if err != nil {
+		return 0, err
+	}
+
+	if !exists {
+		return 0, ErrorValueNotExist
+	}
+
+	return uint32(PerBill), nil
+}
+
 func (c *GsrpcClient) RTokenTotalIssuance(sym RSymbol) (types.U128, error) {
 	symBz, err := types.EncodeToBytes(sym)
 	if err != nil {
