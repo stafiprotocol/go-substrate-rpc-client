@@ -40,10 +40,10 @@ const (
 
 func TestSarpcClient_GetChainEvents(t *testing.T) {
 	logrus.SetLevel(logrus.TraceLevel)
-	// sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "wss://mainnet-rpc.stafi.io", "", client.AddressTypeAccountId, nil, tlog)
+	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "wss://mainnet-rpc.stafi.io", "", client.AddressTypeAccountId, nil, tlog)
 	// sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "wss://scan-rpc.stafi.io", "", client.AddressTypeAccountId, nil, tlog)
 	//sc, err := client.NewGsrpcClient("wss://polkadot-test-rpc.stafi.io", polkaTypesFile, tlog)
-	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "ws://127.0.0.1:9944", "", client.AddressTypeAccountId, AliceKey, tlog)
+	// sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "ws://127.0.0.1:9944", "", client.AddressTypeAccountId, AliceKey, tlog)
 
 	// sc, err := client.NewGsrpcClient(client.ChainTypeStafi, "wss://stafi-seiya.stafi.io", "", client.AddressTypeAccountId, AliceKey, tlog)
 	// sc, err := client.NewGsrpcClient(client.ChainTypePolkadot, "wss://rpc.polkadot.io", polkaTypesFile, client.AddressTypeMultiAddress, AliceKey, tlog,  )
@@ -51,6 +51,12 @@ func TestSarpcClient_GetChainEvents(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	receiver, err := sc.GetRFisReceiver()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(receiver)
 	// rate,err:=sc.GetEraRate(client.RKSM,4773)
 	// if err!=nil{
 	// 	t.Fatal(err)
@@ -62,11 +68,11 @@ func TestSarpcClient_GetChainEvents(t *testing.T) {
 	// 	t.Fatal(err)
 	// }
 	// t.Log(era)
-	rateLimit, err := sc.ActiveChangeRateLimit(client.RDOT)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log(rateLimit)
+	// rateLimit, err := sc.ActiveChangeRateLimit(client.RDOT)
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
+	// t.Log(rateLimit)
 	// 0xd6c1e8d44fe1b4b54773efa907ad6b404756bc761d625d4577264d663144ddd27025e075d5e2f6cde3cc051a31f0766000
 	// 0xd6c1e8d44fe1b4b54773efa907ad6b404ddad12338d5de7866ed2d6abb9f61dc4a9e6f9b8d43f6ad008f8c291929dee201
 	// for i:=14188841;i<1418884114188841;i++{

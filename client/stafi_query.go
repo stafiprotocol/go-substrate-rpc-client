@@ -193,6 +193,18 @@ func (sc *GsrpcClient) GetReceiver() (*types.AccountID, error) {
 	return ac, nil
 }
 
+func (sc *GsrpcClient) GetRFisReceiver() (*types.AccountID, error) {
+	ac := new(types.AccountID)
+	exists, err := sc.QueryStorage(config.RFisModuleId, config.StorageReceiver, nil, nil, ac)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, ErrorValueNotExist
+	}
+	return ac, nil
+}
+
 func (gc *GsrpcClient) GetREthCurrentCycle() (uint32, error) {
 	var cycle uint32
 	exists, err := gc.QueryStorage(config.RClaimModuleId, config.StorageREthActCurrentCycle, nil, nil, &cycle)
