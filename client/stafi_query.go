@@ -305,3 +305,30 @@ func (gc *GsrpcClient) CurrentRethNeedSeed() (bool, error) {
 	}
 	return false, nil
 }
+
+func (c *GsrpcClient) StakePool(sym RSymbol, index uint32) (*[]StakePool, error) {
+	key := struct {
+		Symbol RSymbol
+		Index  uint32
+	}{
+		sym,
+		index,
+	}
+	keyBz, err := types.EncodeToBytes(key)
+	if err != nil {
+		return nil, err
+	}
+
+	act := new([]StakePool)
+
+	exists, err := c.QueryStorage(config.RDexMiningModuleId, config.StorageStakePools, keyBz, nil, act)
+	if err != nil {
+		return nil, err
+	}
+
+	if !exists {
+		return nil, ErrorValueNotExist
+	}
+
+	return act, nil
+}

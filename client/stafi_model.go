@@ -298,3 +298,17 @@ type ChainExtrinsic struct {
 	Fee                decimal.Decimal `json:"fee" sql:"type:decimal(30,0);"`
 	BatchIndex         int             `json:"-" gorm:"-"`
 }
+
+type StakePool struct {
+	Symbol               RSymbol
+	EmergencySwitch      types.Bool
+	TotalStakeLP         types.U128
+	StartBlock           types.U32
+	RewardPerBlock       types.U128
+	TotalReward          types.U128
+	LeftReward           types.U128
+	LPLockedBlocks       types.U32
+	LastRewardBlock      types.U32
+	RewardPerShare       types.U128
+	GuardImpermanentLoss types.Bool
+}
