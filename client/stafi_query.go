@@ -319,9 +319,9 @@ func (c *GsrpcClient) StakePool(sym RSymbol, index uint32) (*[]StakePool, error)
 		return nil, err
 	}
 
-	act := new([]StakePool)
+	result := new([]StakePool)
 
-	exists, err := c.QueryStorage(config.RDexMiningModuleId, config.StorageStakePools, keyBz, nil, act)
+	exists, err := c.QueryStorage(config.RDexMiningModuleId, config.StorageStakePools, keyBz, nil, result)
 	if err != nil {
 		return nil, err
 	}
@@ -330,5 +330,30 @@ func (c *GsrpcClient) StakePool(sym RSymbol, index uint32) (*[]StakePool, error)
 		return nil, ErrorValueNotExist
 	}
 
-	return act, nil
+	return result, nil
+}
+
+func (c *GsrpcClient) SwapPool(sym RSymbol) (*SwapPool, error) {
+	key := struct {
+		Symbol RSymbol
+	}{
+		sym,
+	}
+	keyBz, err := types.EncodeToBytes(key)
+	if err != nil {
+		return nil, err
+	}
+
+	result := new(SwapPool)
+
+	exists, err := c.QueryStorage(config.RDexSwapModuleId, config.StorageSwapPools, keyBz, nil, result)
+	if err != nil {
+		return nil, err
+	}
+
+	if !exists {
+		return nil, ErrorValueNotExist
+	}
+
+	return result, nil
 }

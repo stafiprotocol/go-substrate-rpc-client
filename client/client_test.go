@@ -33,9 +33,9 @@ var (
 )
 
 const (
-	stafiTypesFile  = "/Users/tpkeeper/gowork/stafi/rtoken-relay/network/stafi.json"
-	polkaTypesFile  = "/Users/tpkeeper/gowork/stafi/rtoken-relay/network/polkadot.json"
-	kusamaTypesFile = "/Users/tpkeeper/gowork/stafi/rtoken-relay/network/kusama.json"
+	stafiTypesFile  = "/Volumes/SL500MAC/Users/wang/workspace/repo/stafiprotocol/rtoken-relay/network/stafi.json"
+	polkaTypesFile  = "/Volumes/SL500MAC/Users/wang/workspace/repo/stafiprotocol/rtoken-relay/network/polkadot.json"
+	kusamaTypesFile = "/Volumes/SL500MAC/Users/wang/workspace/repo/stafiprotocol/rtoken-relay/network/kusama.json"
 )
 
 func TestSarpcClient_GetChainEvents(t *testing.T) {
@@ -590,13 +590,28 @@ func TestSarpcClient_RTokenTotalIssuance(t *testing.T) {
 
 func TestQueryStakePools(t *testing.T) {
 	//rpc:="wss://mainnet-rpc.stafi.io"
-	//rpc := "wss://stafi-seiya.stafi.io"
-	rpc := "ws://127.0.0.1:9944"
+	rpc := "wss://stafi-seiya.stafi.io"
+	//rpc := "ws://127.0.0.1:9944"
 	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, rpc, stafiTypesFile, client.AddressTypeAccountId, AliceKey, tlog)
 	if err != nil {
 		t.Fatal(err)
 	}
 	pools, err := sc.StakePool(client.RFIS, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(pools)
+}
+
+func TestQuerySwapPools(t *testing.T) {
+	//rpc:="wss://mainnet-rpc.stafi.io"
+	rpc := "wss://stafi-seiya.stafi.io"
+	//rpc := "ws://127.0.0.1:9944"
+	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, rpc, stafiTypesFile, client.AddressTypeAccountId, AliceKey, tlog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pools, err := sc.SwapPool(client.RFIS)
 	if err != nil {
 		t.Fatal(err)
 	}

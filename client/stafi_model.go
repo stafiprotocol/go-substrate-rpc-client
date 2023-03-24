@@ -312,3 +312,10 @@ type StakePool struct {
 	RewardPerShare       types.U128
 	GuardImpermanentLoss types.Bool
 }
+
+type SwapPool struct {
+	Symbol        RSymbol
+	RTokenBalance types.U128
+	FisBalance    types.U128
+	TotalUnit     types.U128
+}
