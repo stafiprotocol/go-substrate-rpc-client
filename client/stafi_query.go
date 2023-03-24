@@ -333,6 +333,31 @@ func (c *GsrpcClient) StakePool(sym RSymbol, index uint32) (*[]StakePool, error)
 	return result, nil
 }
 
+func (c *GsrpcClient) StakePoolCount(sym RSymbol) (*types.U32, error) {
+	key := struct {
+		Symbol RSymbol
+	}{
+		sym,
+	}
+	keyBz, err := types.EncodeToBytes(key)
+	if err != nil {
+		return nil, err
+	}
+
+	result := new(types.U32)
+
+	exists, err := c.QueryStorage(config.RDexMiningModuleId, config.StorageStakePoolCount, keyBz, nil, result)
+	if err != nil {
+		return nil, err
+	}
+
+	if !exists {
+		return nil, ErrorValueNotExist
+	}
+
+	return result, nil
+}
+
 func (c *GsrpcClient) SwapPool(sym RSymbol) (*SwapPool, error) {
 	key := struct {
 		Symbol RSymbol

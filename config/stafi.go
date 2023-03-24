@@ -88,8 +88,9 @@ const (
 	RDexAddLiquidityEventId = "AddLiquidity"
 	RDexRmLiquidityEventId  = "RemoveLiquidity"
 
-	StorageStakePools = "StakePools"
-	StorageSwapPools  = "SwapPools"
+	StorageStakePools     = "StakePools"
+	StorageStakePoolCount = "PoolCount"
+	StorageSwapPools      = "SwapPools"
 
 	RDexMiningModuleId = "RDexMining"
 )

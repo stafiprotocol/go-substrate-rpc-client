@@ -603,6 +603,21 @@ func TestQueryStakePools(t *testing.T) {
 	t.Log(pools)
 }
 
+func TestQueryStakePoolsCount(t *testing.T) {
+	//rpc:="wss://mainnet-rpc.stafi.io"
+	//rpc := "wss://stafi-seiya.stafi.io"
+	rpc := "ws://127.0.0.1:9944"
+	sc, err := client.NewGsrpcClient(client.ChainTypeStafi, rpc, stafiTypesFile, client.AddressTypeAccountId, AliceKey, tlog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	count, err := sc.StakePoolCount(client.RFIS)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(count)
+}
+
 func TestQuerySwapPools(t *testing.T) {
 	//rpc:="wss://mainnet-rpc.stafi.io"
 	rpc := "wss://stafi-seiya.stafi.io"
