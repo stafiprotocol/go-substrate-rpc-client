@@ -40,7 +40,11 @@ func (kr keyRing) Verify(msg []byte, signature []byte) bool {
 	if err := sig.Decode(sigs); err != nil {
 		return false
 	}
-	return kr.pub.Verify(sig, signingContext(msg))
+	ok, err := kr.pub.Verify(sig, signingContext(msg))
+	if err != nil {
+		return false
+	}
+	return ok
 }
 
 func signingContext(msg []byte) *merlin.Transcript {
@@ -150,7 +154,7 @@ func (s Scheme) FromSeed(seed []byte) (subkey.KeyPair, error) {
 }
 
 func (s Scheme) FromPhrase(phrase, pwd string) (subkey.KeyPair, error) {
-	ms, err := sr25519.MiniSecretFromMnemonic(phrase, pwd)
+	ms, err := sr25519.MiniSecretKeyFromMnemonic(phrase, pwd)
 	if err != nil {
 		return nil, err
 	}
@@ -210,6 +214,9 @@ func (s Scheme) FromPublicKey(bytes []byte) (subkey.PublicKey, error) {
 	}
 	arr := [32]byte{}
 	copy(arr[:], bytes[:32])
-	key := sr25519.NewPublicKey(arr)
+	key, err := sr25519.NewPublicKey(arr)
+	if err != nil {
+		return nil, err
+	}
 	return &keyRing{pub: key}, nil
 }

@@ -13,6 +13,7 @@ import (
 	scaleTypes "github.com/itering/scale.go/types"
 	scaleBytes "github.com/itering/scale.go/types/scaleBytes"
 	"github.com/itering/scale.go/utiles"
+	"github.com/itering/substrate-api-rpc/model"
 	"github.com/itering/substrate-api-rpc/rpc"
 	"github.com/stafiprotocol/go-substrate-rpc-client/config"
 	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/stafidecoder"
@@ -493,8 +494,8 @@ func (sc *GsrpcClient) sendWsRequest(v interface{}, action []byte) error {
 	}
 }
 
-func (sc *GsrpcClient) GetBlock(blockHash string) (*rpc.Block, error) {
-	v := &rpc.JsonRpcResult{}
+func (sc *GsrpcClient) GetBlock(blockHash string) (*model.Block, error) {
+	v := &model.JsonRpcResult{}
 	if err := sc.sendWsRequest(v, rpc.ChainGetBlock(wsId, blockHash)); err != nil {
 		return nil, err
 	}
@@ -542,7 +543,7 @@ func (sc *GsrpcClient) GetExtrinsics(blockHash string) ([]*Transaction, error) {
 		for _, raw := range blk.Extrinsics {
 			e.Init(scaleBytes.ScaleBytes{Data: utiles.HexToBytes(raw)}, &option)
 			e.Process()
-			decodeExtrinsic := e.Value.(map[string]interface{})
+			decodeExtrinsic := e.Value.(*scalecodec.GenericExtrinsic)
 			var ce ChainExtrinsic
 			eb, _ := json.Marshal(decodeExtrinsic)
 			_ = json.Unmarshal(eb, &ce)
@@ -573,7 +574,7 @@ func (sc *GsrpcClient) GetExtrinsics(blockHash string) ([]*Transaction, error) {
 }
 
 func (sc *GsrpcClient) GetBlockHash(blockNum uint64) (string, error) {
-	v := &rpc.JsonRpcResult{}
+	v := &model.JsonRpcResult{}
 	if err := sc.sendWsRequest(v, rpc.ChainGetBlockHash(wsId, int(blockNum))); err != nil {
 		return "", fmt.Errorf("websocket get block hash error: %v", err)
 	}
@@ -590,7 +591,7 @@ func (sc *GsrpcClient) GetBlockHash(blockNum uint64) (string, error) {
 }
 
 func (sc *GsrpcClient) GetChainEvents(blockHash string) ([]*ChainEvent, error) {
-	v := &rpc.JsonRpcResult{}
+	v := &model.JsonRpcResult{}
 	if err := sc.sendWsRequest(v, rpc.StateGetStorage(wsId, storageKey, blockHash)); err != nil {
 		return nil, fmt.Errorf("websocket get event raw error: %v", err)
 	}
@@ -767,8 +768,8 @@ func (sc *GsrpcClient) GetBlockTimestampAndExtrinsics(height uint64) (uint64, ma
 	}
 }
 
-func (sc *GsrpcClient) GetPaymentQueryInfo(encodedExtrinsic string) (paymentInfo *rpc.PaymentQueryInfo, err error) {
-	v := &rpc.JsonRpcResult{}
+func (sc *GsrpcClient) GetPaymentQueryInfo(encodedExtrinsic string) (paymentInfo *model.PaymentQueryInfo, err error) {
+	v := &model.JsonRpcResult{}
 	if err = sc.sendWsRequest(v, rpc.SystemPaymentQueryInfo(wsId, encodedExtrinsic)); err != nil {
 		return
 	}

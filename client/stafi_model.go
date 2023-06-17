@@ -2,7 +2,7 @@ package client
 
 import (
 	scale "github.com/itering/scale.go"
-	"github.com/itering/substrate-api-rpc/rpc"
+	"github.com/itering/substrate-api-rpc/model"
 	"github.com/shopspring/decimal"
 	"github.com/stafiprotocol/go-substrate-rpc-client/signature"
 	"github.com/stafiprotocol/go-substrate-rpc-client/types"
@@ -135,7 +135,7 @@ type MultiEventFlow struct {
 	Key             *signature.KeyringPair
 	Others          []types.AccountID
 	OpaqueCalls     []*MultiOpaqueCall
-	PaymentInfo     *rpc.PaymentQueryInfo
+	PaymentInfo     *model.PaymentQueryInfo
 	NewMulCallHashs map[string]bool
 	MulExeCallHashs map[string]bool
 }

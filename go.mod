@@ -1,6 +1,6 @@
 module github.com/stafiprotocol/go-substrate-rpc-client
 
-go 1.19
+go 1.20
 
 require (
 	github.com/ChainSafe/go-schnorrkel v1.0.0
@@ -10,9 +10,9 @@ require (
 	github.com/ethereum/go-ethereum v1.10.20
 	github.com/gorilla/websocket v1.5.0
 	github.com/gtank/merlin v0.1.1
-	github.com/huandu/xstrings v1.3.2
-	github.com/itering/scale.go v1.5.8
-	github.com/itering/substrate-api-rpc v0.4.15
+	github.com/huandu/xstrings v1.4.0
+	github.com/itering/scale.go v1.6.5
+	github.com/itering/substrate-api-rpc v0.5.0
 	github.com/jpillora/backoff v1.0.0
 	github.com/pierrec/xxHash v0.1.5
 	github.com/rs/cors v1.8.2
@@ -20,7 +20,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stafiprotocol/chainbridge v1.1.0
 	github.com/stretchr/testify v1.8.0
-	golang.org/x/crypto v0.0.0-20221010152910-d6f0a8c073c2
+	golang.org/x/crypto v0.8.0
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce
 )
 
@@ -38,11 +38,7 @@ require (
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
 	github.com/tklauser/numcpus v0.4.0 // indirect
-	golang.org/x/sys v0.0.0-20221010170243-090e33056c14 // indirect
-	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467 // indirect
+	golang.org/x/sys v0.7.0 // indirect
+	golang.org/x/term v0.7.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/ChainSafe/go-schnorrkel => github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d
-
-replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1

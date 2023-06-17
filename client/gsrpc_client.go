@@ -11,6 +11,7 @@ import (
 	"github.com/itering/scale.go/source"
 	scaleTypes "github.com/itering/scale.go/types"
 	"github.com/itering/scale.go/utiles"
+	"github.com/itering/substrate-api-rpc/model"
 	"github.com/itering/substrate-api-rpc/rpc"
 	gsrpcConfig "github.com/stafiprotocol/go-substrate-rpc-client/config"
 	"github.com/stafiprotocol/go-substrate-rpc-client/pkg/recws"
@@ -125,7 +126,7 @@ func NewGsrpcClient(chainType, endpoint, typesPath, addressType string, key *sig
 }
 
 func (s *GsrpcClient) getStafiMetaDecoder(blockHash string) (*stafi_decoder.MetadataDecoder, error) {
-	v := &rpc.JsonRpcResult{}
+	v := &model.JsonRpcResult{}
 	// runtime version
 	if err := s.sendWsRequest(v, rpc.ChainGetRuntimeVersion(wsId, blockHash)); err != nil {
 		return nil, err
@@ -169,7 +170,7 @@ func (s *GsrpcClient) getStafiMetaDecoder(blockHash string) (*stafi_decoder.Meta
 }
 
 func (s *GsrpcClient) getPolkaMetaDecoder(blockHash string) (*scale.MetadataDecoder, error) {
-	v := &rpc.JsonRpcResult{}
+	v := &model.JsonRpcResult{}
 	// runtime version
 	if err := s.sendWsRequest(v, rpc.ChainGetRuntimeVersion(wsId, blockHash)); err != nil {
 		return nil, err
